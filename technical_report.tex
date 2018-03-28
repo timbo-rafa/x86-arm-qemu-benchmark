@@ -1,0 +1,1971 @@
+% Exemplo de relatório técnico do IC
+% Criado por P.J.de Rezende antes do Alvorecer da História.
+% Modificado em 97-06-15 e 01-02-26 por J.Stolfi.
+% Last edited on 2003-06-07 21:12:18 by stolfi
+% modificado em 1o. de outubro de 2008
+% modificado em 2012-09-25 para ajustar o pacote UTF8. Contribuicao de
+%   Rogerio Cardoso
+
+\documentclass[11pt,twoside]{article}
+\usepackage{techrep-ic}
+%%% SE USAR INGLÊS, TROQUE AS ATIVAÇÕES DOS DOIS COMANDOS A SEGUIR:
+%% \usepackage[brazil]{babel}
+ \usepackage[english]{babel}
+
+%%% SE USAR CODIFICAÇÃO LATIN1, TROQUE AS ATIVAÇÕES DOS DOIS COMANDOS
+%%% SEGUIR:
+%% \usepackage[latin1]{inputenc}
+\usepackage[utf8]{inputenc}
+\usepackage{fmtcount}
+\usepackage{datatool}
+\usepackage{databar}
+\usepackage{graphics,color}
+\usepackage{url}
+\usepackage{numprint}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\usetikzlibrary{patterns}
+\pgfplotsset{compat=1.8}
+\begin{document}
+%%% PÁGINA DE CAPA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% Número do relatório
+\TRNumber{45}
+
+% DATA DE PUBLICAÇÃO (PARA A CAPA)
+%
+\TRYear{13}  % Dois dígitos apenas
+\TRMonth{08} % Numérico, 01-12
+
+% LISTA DE AUTORES PARA CAPA (sem afiliações).
+\TRAuthor{R. Timbó Matos \and Edson Borin}
+% \TRAuthor{A. Goodbeer \and Ch. Opps \and E. S. Puma}
+
+% TÍTULO PARA A CAPA (use \\ para forçar quebras de linha).
+\TRTitle{Techniques for\\virtual machine performance analysis}
+
+%\TRMakeCover
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% O que segue é apenas uma sugestão - sinta-se à vontade para
+% usar seu formato predileto, desde que as margens tenham pelo
+% menos 25mm nos quatro lados, e o tamanho do fonte seja pelo menos
+% 11pt. Certifique-se também de que o título e lista de autores
+% estão reproduzidos na íntegra na página 1, a primeira depois da
+% página de capa.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Nomes de autores ABREVIADOS e titulo ABREVIADO,
+% para cabeçalhos em cada página.
+%
+\markboth{Timbó e Borin}{Virtual Machines Performance}
+\pagestyle{myheadings}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TÍTULO e NOMES DOS AUTORES, completos, para a página 1.
+% Use "\\" para quebrar linhas, "\and" para separar autores.
+%
+\title{Evaluation of virtual machine performance}
+
+\author{Rafael Timbó Matos
+  \thanks{Institute of Computing, UNICAMP, Brazil.
+    Research conducted with partial financial support from CNPq.
+  }\and
+  Edson Borin
+  \thanks{Institute of Computing, UNICAMP, Brazil.
+  }
+}
+
+\date{}
+
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Comandos
+\newcommand{\syscall}[1]{\emph{#1}}
+%\newcommand{\printcounter}[1]{$^{\decimal{#1}}$\addtocounter{#1}{1}}
+\newcommand{\printcounter}[1]{}
+\newcommand{\echocounter}[1]{%
+	\csname the#1\endcsname \stepcounter{#1}
+}
+% % files used (current dir)  %  % % % % % % % % % % % % % % % % % % %
+
+\newcommand{\tabledir}{tables}
+\newcommand{\tablefile}{\tabledir/table.csv}
+\newcommand{\tableint}{\tabledir/int.csv}
+\newcommand{\tablefp}{\tabledir/fp.csv}
+\newcommand{\perfdir}{\tabledir/perf-ia64-qemu64}
+\newcommand{\p}{\perfdir}
+\newcommand{\perfext}{perf-ia64-qemu64}
+\newcommand{\fileext}{.csv}
+\newcommand{\areasfileext}{-main-areas}
+\newcommand{\pe}{\perfext\fileext}
+\newcommand{\pa}{\perfext\areasfileext\fileext}
+\newcommand{\pgfdir}{\perfdir-pgf}
+%Generated with
+% for file in `ls`; do N=`echo $file | cut -c5- | sed "s#-.*##" | sed "s/[0-9].*//g" `; PREFIX=`echo $file | rev | cut -c21- | rev` ; BMNAME=`echo $PREFIX | rev | cut -c2- | rev` ;echo "\newcommand{\\${N}name}{$BMNAME}" ; echo "\newcommand{\p$N}{\p/$PREFIX\pe}"; echo "\newcommand{\pa$N}{\p/$PREFIX\pa}";done
+\newcommand{\perlbenchname}{400.perlbench}
+\newcommand{\pperlbench}{\p/400.perlbench-\pe}
+\newcommand{\paperlbench}{\p/400.perlbench-\pa}
+\newcommand{\bzipname}{401.bzip2}
+\newcommand{\pbzip}{\p/401.bzip2-\pe}
+\newcommand{\pabzip}{\p/401.bzip2-\pa}
+\newcommand{\gccname}{403.gcc}
+\newcommand{\pgcc}{\p/403.gcc-\pe}
+\newcommand{\pagcc}{\p/403.gcc-\pa}
+\newcommand{\bwavesname}{410.bwaves}
+\newcommand{\pbwaves}{\p/410.bwaves-\pe}
+\newcommand{\pabwaves}{\p/410.bwaves-\pa}
+\newcommand{\gamessname}{416.gamess}
+\newcommand{\pgamess}{\p/416.gamess-\pe}
+\newcommand{\pagamess}{\p/416.gamess-\pa}
+\newcommand{\mcfname}{429.mcf}
+\newcommand{\pmcf}{\p/429.mcf-\pe}
+\newcommand{\pamcf}{\p/429.mcf-\pa}
+\newcommand{\milcname}{433.milc}
+\newcommand{\pmilc}{\p/433.milc-\pe}
+\newcommand{\pamilc}{\p/433.milc-\pa}
+\newcommand{\zeusmpname}{434.zeusmp}
+\newcommand{\pzeusmp}{\p/434.zeusmp-\pe}
+\newcommand{\pazeusmp}{\p/434.zeusmp-\pa}
+\newcommand{\gromacsname}{435.gromacs}
+\newcommand{\pgromacs}{\p/435.gromacs-\pe}
+\newcommand{\pagromacs}{\p/435.gromacs-\pa}
+\newcommand{\cactusADMname}{436.cactusADM}
+\newcommand{\pcactusADM}{\p/436.cactusADM-\pe}
+\newcommand{\pacactusADM}{\p/436.cactusADM-\pa}
+\newcommand{\lesliename}{437.leslie3d}
+\newcommand{\pleslie}{\p/437.leslie3d-\pe}
+\newcommand{\paleslie}{\p/437.leslie3d-\pa}
+\newcommand{\namdname}{444.namd}
+\newcommand{\pnamd}{\p/444.namd-\pe}
+\newcommand{\panamd}{\p/444.namd-\pa}
+\newcommand{\gobmkname}{445.gobmk}
+\newcommand{\pgobmk}{\p/445.gobmk-\pe}
+\newcommand{\pagobmk}{\p/445.gobmk-\pa}
+\newcommand{\dealIIname}{447.dealII}
+\newcommand{\pdealII}{\p/447.dealII-\pe}
+\newcommand{\padealII}{\p/447.dealII-\pa}
+\newcommand{\soplexname}{450.soplex}
+\newcommand{\psoplex}{\p/450.soplex-\pe}
+\newcommand{\pasoplex}{\p/450.soplex-\pa}
+\newcommand{\povrayname}{453.povray}
+\newcommand{\ppovray}{\p/453.povray-\pe}
+\newcommand{\papovray}{\p/453.povray-\pa}
+\newcommand{\calculixname}{454.calculix}
+\newcommand{\pcalculix}{\p/454.calculix-\pe}
+\newcommand{\pacalculix}{\p/454.calculix-\pa}
+\newcommand{\hmmername}{456.hmmer}
+\newcommand{\phmmer}{\p/456.hmmer-\pe}
+\newcommand{\pahmmer}{\p/456.hmmer-\pa}
+\newcommand{\sjengname}{458.sjeng}
+\newcommand{\psjeng}{\p/458.sjeng-\pe}
+\newcommand{\pasjeng}{\p/458.sjeng-\pa}
+\newcommand{\GemsFDTDname}{459.GemsFDTD}
+\newcommand{\pGemsFDTD}{\p/459.GemsFDTD-\pe}
+\newcommand{\paGemsFDTD}{\p/459.GemsFDTD-\pa}
+\newcommand{\libquantumname}{462.libquantum}
+\newcommand{\plibquantum}{\p/462.libquantum-\pe}
+\newcommand{\palibquantum}{\p/462.libquantum-\pa}
+\newcommand{\hname}{464.h264ref}
+\newcommand{\ph}{\p/464.h264ref-\pe}
+\newcommand{\pah}{\p/464.h264ref-\pa}
+\newcommand{\tontoname}{465.tonto}
+\newcommand{\ptonto}{\p/465.tonto-\pe}
+\newcommand{\patonto}{\p/465.tonto-\pa}
+\newcommand{\lbmname}{470.lbm}
+\newcommand{\plbm}{\p/470.lbm-\pe}
+\newcommand{\palbm}{\p/470.lbm-\pa}
+\newcommand{\omnetppname}{471.omnetpp}
+\newcommand{\pomnetpp}{\p/471.omnetpp-\pe}
+\newcommand{\paomnetpp}{\p/471.omnetpp-\pa}
+\newcommand{\astarname}{473.astar}
+\newcommand{\pastar}{\p/473.astar-\pe}
+\newcommand{\paastar}{\p/473.astar-\pa}
+\newcommand{\wrfname}{481.wrf}
+\newcommand{\pwrf}{\p/481.wrf-\pe}
+\newcommand{\pawrf}{\p/481.wrf-\pa}
+\newcommand{\sphinxname}{482.sphinx3}
+\newcommand{\psphinx}{\p/482.sphinx3-\pe}
+\newcommand{\pasphinx}{\p/482.sphinx3-\pa}
+\newcommand{\xalancbmkname}{483.xalancbmk}
+\newcommand{\pxalancbmk}{\p/483.xalancbmk-\pe}
+\newcommand{\paxalancbmk}{\p/483.xalancbmk-\pa}
+
+% % Configuration % % % % % % % % % % % % % % % % % % % % % % % % %
+
+% Don't compile everything. Compile Faster(change to "f")
+\newcommand{\printtables}{t}
+\newcommand{\printcharts}{t}
+\newcommand{\maxperfrows}{20}
+\newcommand{\barwidth}{6pt}
+\newcommand{\hbarwidth}{15pt}
+%Names of areas of code
+\newcommand{\benchmarkname}{Benchmark}
+\newcommand{\mutexname}{Mutex}
+\newcommand{\fpname}{SoftFloat}
+\newcommand{\qname}{Qemu}
+\newcommand{\perfname}{Perf}
+\newcommand{\othersname}{Others}
+%Color Stuff
+\newcommand{\benchmarkcolor}{green}
+\newcommand{\mutexcolor}{yellow}
+\newcommand{\softfloatcolor}{red}
+\newcommand{\qemucolor}{cyan}
+\newcommand{\perfcolor}{darkgray}
+\newcommand{\otherscolor}{lightgray}
+% DTL color set
+\DTLsetbarcolor{1}{\benchmarkcolor}
+\DTLsetbarcolor{2}{\mutexcolor}
+\DTLsetbarcolor{3}{\softfloatcolor}
+\DTLsetbarcolor{4}{\qemucolor}
+\DTLsetbarcolor{5}{\perfcolor}
+\DTLsetbarcolor{6}{\otherscolor}
+% Legends
+\newsavebox{\greensquare}
+\savebox{\greensquare}{\textcolor{green}{\rule{0.1in}{0.1in}}}
+\newsavebox{\yellowsquare}
+\savebox{\yellowsquare}{\textcolor{yellow}{\rule{0.1in}{0.1in}}}
+\newsavebox{\redsquare}
+\savebox{\redsquare}{\textcolor{red}{\rule{0.1in}{0.1in}}}
+\newsavebox{\cyansquare}
+\savebox{\cyansquare}{\textcolor{cyan}{\rule{0.1in}{0.1in}}}
+\newsavebox{\darkgraysquare}
+\savebox{\darkgraysquare}{\textcolor{darkgray}{\rule{0.1in}{0.1in}}}
+\newsavebox{\lightgraysquare}
+\savebox{\lightgraysquare}{\textcolor{lightgray}{\rule{0.1in}{0.1in}}}
+% % Information about tools used % % % % % % % % % % % % % % % % % %
+
+\newcommand{\qemuversion}{1.1.1}
+\newcommand{\perfversion}{2.6.32-46}% 0.0.2.PERF}
+\newcommand{\dynamorioversion}{4.0.1-1}
+\newcommand{\pinversion}{2.12-58423}
+\newcommand{\pincompiler}{gcc 4.4.7}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\begin{abstract}\normalsize
+%  The next section discuss about our chronogram.
+%  The section 2 details about the emulation tool, QEMU.
+%  Next, on section 3, we describe how the experiment was done and
+%  configuration features.
+%  On section 4 we present the parcial results of the runs made.
+%  Finally, on section 5, we depict what is going to be done next.
+%\end{abstract}
+
+\section{Introduction}
+  This report presents the results achieved and the methodology
+  used on the performance analysis of some virtual machines.
+  We first performed a survey of benchmarks and selected the SPEC CPU
+  2006 benchmarks to experiment with QEMU.
+  The SPEC CPU is composed of 29 C, C++ and Fortran programs and are
+  typically used for processor performance analysis. After selecting
+  these benchmarks, we generated x86-32,
+  x86-64, and ARM binaries for these benchmarks. Next, we installed
+  the QEMU, DynamoRIO and Pin virtual machines and
+  executed the generated binaries
+  natively and using the virtual machines on x86 and QEMU on
+  ARM systems.
+  Our results indicate that QEMU is really slow, while DynamoRIO
+  and Pin are at most 10 times slower 
+  when compared to native execution.
+
+\section{Materials and Methodology}
+
+\subsection{Materials}
+  This section describes the environment setup.
+  The ARM platform used was an i.MX53 Quick Start Board
+  based on the Freescale Semiconductor i.MX53 Applications
+  Processor~\cite{imx53}. Its Cortex-A8 processor with 1GHz
+  of frequency is built around a system
+  with hardware and multimedia accelerators, graphics processing
+  units, which have support to 2D and 3D graphics. Moreover,
+  the platform has 1GB of RAM memory, ethernet connection,
+  USB, PATA, SATA, and VGA. It also comes with a 4GB SD card
+  preloaded with Ubuntu Demonstration Software.
+
+  Due to the chip's low memory, we needed a swap memory,
+  for which the SD card is not appropriate. Therefore we set up
+  a 120GB hard disk, copying the operational system to it
+  with the Unix \texttt{dd} command. Then a 4GB swap memory
+  was set up using the Gparted partition editor.
+  Next, we had to reconfigure the board boot loader,
+  U-boot~\cite{uboot}, to load the operational
+  system from the disk rather than from the SD card. After
+  properly configuring the hard disk, the swap memory and the
+  boot loader, the ARM system was ready to run the SPEC tests.
+  SPEC CPU is a software benchmark set used as a measure to compare 
+  performance of different computer systems.
+  It is based on real application software. To ease SPEC use,
+  some tools are provided with the SPEC CPU benchmarks.
+  These tools aid users to collect result data and run tests.
+  However, their precompiled binaries are unavailable for ARM
+  architectures. The tools were compiled for our ARM system
+  with the \texttt{buildtools} script provided by SPEC.
+
+  Afterwards, the benchmarks themselves needed to be compiled. 
+  Checking our libraries and programs were necessary, for some
+  were missing, such as gfortran, the GNU compiler for the 
+  Fortran language, gmp, the GNU multiple-precision
+  arithmetic library, mpfr, the GNU multiple-precision 
+  floating-point computations. The flags employed were \texttt{-O3},
+  which instructs the compiler to perform code optimizations, and
+  \texttt{-lm}, responsible for
+  linking against the math library. The runspec option 
+  ``\texttt{--build}'' were used in order to separate the compilation
+  phase from the running phase. The metric utilized for
+  compilation was the base, defined by SPEC. The base guideline
+  states that the compilation must be made using a single set of
+  switches in a single-step make process. This means that all
+  benchmarks of a given language must be compiled using the
+  same flags in the same order and no feedback-directed
+  optimization is allowed.
+  
+  As for the x86 platform, the machine used was one
+  from the Unicamp's Computer Systems Laboratory (LSC)
+  with an 2.4GHz Intel Xeon CPU E5645
+  processor assembled with 32GB of memory and loaded with Ubuntu
+  Server 10.04.3 LTS amd64. The support tools
+  were already precompiled in this case and the 
+  \texttt{linux-suse101-i386} tools were employed. The compilation
+  process for the x86 environment is basically the same as the 
+  one described above for the ARM system. Variables used on
+  configuration files are given in section \ref{sec:methodology}.
+
+  Finally, we needed to set up our virtual machines, user-mode QEMU,
+  DynamoRIO, and Pin, detailed in the subsections below.
+\subsubsection{QEMU}
+	\label{sec:qemu}
+
+  The QEMU tool~\cite{qemubellard, qemubart} is a virtual machine
+  that relies on dynamic binary translation to emulate x86 (32 bits),
+  x86-64, ARM, MIPS, PowerPC, Sparc32, Sparc64 and a few other
+  CPU binaries.
+  QEMU version \qemuversion \space was compiled on both systems
+  using the commands presented on table \ref{tab:qemucompile}. 
+
+%\subsection{Overview}
+  The dynamic translation is done splitting target
+  instructions into simpler instructions called
+  \emph{micro operations}. Then a compile time tool
+  - called \emph{dyngen} - uses these operations to create a
+  dynamic code generator, used at runtime to generate a complete
+  host function containing several micro operations.
+%\subsection{Translated Blocks and Translation Cache}
+  These are used to create basic blocks of host code
+  called \emph{Translated Blocks}.
+  Translated blocks are considered to be associated with a
+  %QEMU considers that each translated block is associated with a
+  immutable CPU internal state in order to improve QEMU's
+  performance. Once CPU state information changes, another
+  translated block will be generated. As a result, the state
+  can be recorded with the translated block itself.
+  %  
+  %CPUs use internal states which change how they evaluate
+  %instructions. For performance reasons,
+  %QEMU considers that in its translation phase some CPU
+  %state information cannot change. Thus, for every piece
+  %of code, the state can be recorded with it. Once it
+  %changes, a new block of code is generated with the appropriate
+  %state. These basic blocks are called \emph{Translated Blocks}.
+  %
+  For example, jumping, branching or changing privilege level
+  are actions that can change a CPU state in a unknown way
+  at translation time.
+  %, causing another translated block to be generated
+  Translated Blocks are stored in a 32% ?
+  MB code cache, being completely flushed when full for simplicity.
+  % A 32 MByte cache holds the most recently used translations
+  % VS
+  % A 16 MByte cache holds the most recently used TBs
+  %
+  Moreover,
+  % Translated Block Invalidation
+  when translated code is generated for a basic block,
+  the corresponding host page is write protected
+  if it is not already read-only. Then, if a write access is done 
+  to the page, Linux raises a SEGV signal. QEMU then invalidates
+  all the translated code in the page and enables write accesses
+  to the page.
+  Correct translated code invalidation is done efficiently by
+  maintaining a linked list of every translated block contained in
+  a given page. Other linked lists are also maintained to 
+  undo direct block chaining.
+  In x86 emulation, no  instruction cache invalidation is signaled by
+  the application when code is modified, turning 
+  some intrinsic topics, % improve this
+  such as self-modifying code,
+  into a special challenge.
+
+  % On RISC targets, correctly written software uses memory barriers and cache flushes, so some of the protection above would not be necessary. However, QEMU still requires that the generated code always matches the target instructions in memory in order to handle exceptions correctly.
+
+  To improve performance, QEMU keeps some of its features simple.
+  %
+%\subsection{Register Allocation}
+  For instance, QEMU uses a fixed register allocation approach.
+  %For simplicity and portability, QEMU uses a fixed register
+  %allocation.
+  That is, each target CPU register is mapped to a fixed
+  memory address or host register. Typically, the former holds 
+  the target registers and the latter is used
+  for temporary variables.
+%\subsection{Hardware Interrupts}
+  Concerning hardware interrupts, translated blocks do not check for
+  them. This is done only by the main loop.
+  %
+  % Hardware interrupts are not checked for at every translated block
+  %Only the main loop tests if an interrupt is pending. This approach
+  %allows faster emulation.
+  However, interrupt checking can be manually triggered by
+  asynchronously calling
+  a specific function to reset the chaining of the
+  currently executing translated block. This ensures that the
+  main loop will soon regain the execution control,
+  therefore handling pending interrupts.
+%\subsection{Exception Support}
+  % conflict ?
+  As for exceptions, the C function \syscall{longjmp} is used.
+  % when an exception such as division by zero is encountered.
+  The host SIGSEGV and SIGBUS signal handlers are used to get invalid
+  memory accesses. The simulated program counter is found by 
+  retranslating the corresponding basic block and by looking where
+  the host program counter was at the exception point. The emulated
+  code can be restarted in case of need.
+  %
+%\subsection{Condition Code Optimizations}
+  Another example of simplified behavior is the processing of
+  condition codes.
+  Some processors are built to set the condition codes automatically
+  on each instruction, even though
+  whether these codes will be used is unknown.
+  % these codes will not necessarily be used
+  This can be a major source of overhead and, to overcome this, QEMU
+  uses lazy evaluation of CPU condition codes.
+  In other words, the tool only calculates the condition codes when
+  needed. It does so by storing just one operand,
+  %- called \emph{CC\textunderscore SRC} -
+  the result,
+  % - \emph{CC\textunderscore DST} -
+  and the type of operation.
+  % - \emph{CC\textunderscore OP}
+  The block is then further optimized at translation time
+  by removing unused values.
+
+%\subsection{Direct Block Chaining}
+  QEMU also enhances block chaining.
+  Once the execution of a translated block has finished,
+  the simulated
+  Program Counter and the CPU state are used as a hash to find the
+  next block. If the translation has already been done, a jump to the
+  block is done. Otherwise, a new translation is initiated.
+  An improvement is done by patching a translated block so that
+  it jumps directly to the next one,
+  therefore reducing the runtime overhead.
+  This accelerates the most common case
+  where the new simulated PC is known.
+
+%\subsection{Memory Management}
+  On the subject of memory management,
+  % For system emulation,
+  QEMU uses the \syscall{mmap} system call to emulate the target MMU,
+  which works as long as the emulated operational system
+  does not use reserved areas by the host operational system.
+  QEMU also supports a software MMU,
+  in which the MMU virtual to physical
+  address translation is done at every memory access. An address
+  translation cache is used to speed up the translation. Moreover, 
+  Each translated block is indexed with its physical address.
+  When MMU
+  mappings change, the chaining of the translated blocks is reset,
+  because the jump target may change.
+
+%\subsection{User Mode Emulation}
+  Beyond emulating a whole operating system, QEMU is also capable
+  of emulating a Linux process, with 
+  special treatment for system calls, signals and threads.
+  % System Calls
+  A generic system call translator for Linux is responsible for
+  solving endianness and 32/64 bits issues. Besides, the ioctl system
+  call is specially handled with a generic type description system.
+  % (for further information,
+  % see QEMU source files ioctls.h and thunk.c)
+  It also emulates the \syscall{mmap}
+  system call to support host CPU pages bigger than 4KB.
+  % Signals
+  Similarly to the Linux kernel, normal and real-time signals are
+  queued along with their information and, when the virtual CPU
+  is interrupted, one queued signal is handled by generating a stack
+  frame in the virtual CPU. Then, 
+  a \syscall{sigreturn} system call is emulated
+  to return from the virtual signal handler. When possible,
+  the signal
+  handling is done directly by the host Linux Kernel. For instance,
+  SIGALRM and the blocked signal mask are not emulated, allowing most
+  signal system calls to be redirected directly to the host Linux
+  Kernel. On the other hand, CPU exceptions, such as SIGFPE, and the
+  \syscall{sigaction} system call are emulated.
+  % Threads
+  In order to emulate threads, QEMU uses the host \syscall{clone}
+  system call to create real host threads, creating one virtual CPU
+  instance for each thread. For the x86 architecture, atomic 
+  operations are emulated with a global 
+  lock to preserve their semantic.
+\subsubsection{DynamoRIO}
+	\label{sec:dynamorio}
+  DynamoRIO~\cite{dynamorio} is runtime code manipulation
+  system that supports code transformations on any part of a
+  program, while it executes.
+  On our work, we only used it as a process virtual machine and
+  did not perform any code manipulations.
+  % Mention x86 only
+  The binaries used were downloaded directly from its
+  site~\cite{dynsrc}.
+  DynamoRIO operates in user mode on a target process.
+  As a process virtual machine, it interposes between the
+  application and the operating system.
+  It has a complete view of the application code stream and acts
+  as a runtime control point.
+  The application itself, along with the underlying
+  operating system and hardware, remain unchanged.
+  
+  DynamoRIO operates by shifting an application's execution from
+  its original instructions to a code cache, which greatly improves
+  execution in comparison to emulation.
+  %Furthermore,
+  DynamoRIO occupies the address space with the
+  application and has full control over execution, taking over
+  whenever control leaves the code cache or when the
+  operating system directly transfers control to the application.
+  This is achieved by modifying control transfer instructions, such
+  as branches and jumps, to give control to DynamoRIO.
+
+  Furthermore,
+  the application code is copied one dynamic basic block
+  at a time into DynamoRIO's basic block code cache. Address
+  conversion between the cache and the application are needed for  
+  indirect branch address translation and handling of signals
+  and exceptions, for example.
+  Indirect branches require dynamic resolution of their targets,
+  which is performed via an inlined table lookup or
+  a comparison to a known target inlined into a trace.
+  A block that directly targets another block already resident
+  in the cache is linked to that target block to avoid the cost of
+  returning to the DynamoRIO dispatcher, which considerably
+  affects performance, as returning to the dispatcher
+  would require context switching.
+  %% Links can be undone in order to, for example,
+  %% change code layout.
+  Frequently executed sequences of basic blocks are combined
+  into traces, placed in a separate code cache. Despite 
+  duplicated codes, these linking techniques are generally an
+  improvement, as they achieve better code layout for a
+  significant performance boost and create less data structures
+  related to basic blocks.
+  % Linking
+  % Transparency
+
+  DynamoRIO executes applications transparently,
+  leaving program binaries and data unmodified, but
+  sacrificing some aggressive optimizations that would assume
+  a behavior from the application. Moreover, DynamoRIO relies only
+  on system calls and never on user libraries for external
+  resources due to reentrancy and corruption 
+  %of persistent state like error codes
+  problems.
+  % Windows API problem
+  %This is a tricky problem on Windows, as the documented method of
+  %interacting with the operating system is through user libraries,
+  %binding DynamoRIO to the undocumented Windows system call
+  %interface, which can change without notice.
+  % Error Transparency
+  DynamoRIO also maintains errors transparency:
+  applications that have faulty behavior, such as
+  invalid memory access or invalid instruction execution,
+  %or generate exceptions
+  are handled as if the fault occurred natively. Nevertheless,
+  % for full debugging transparency,
+  debugger threads that should run natively currently does not,
+  although debuggers such as gdb or Debugging Tools for Windows
+  work fine with DynamoRIO.
+  
+  Additionally,
+  DynamoRIO maintains its own stack, I/O routines and
+  memory manager, obtaining its memory directly from system
+  calls and separated from the application's memory. This
+  prevents resource usage conflicts and helps maintaining
+  the application unaware of DynamoRIO.
+  %%Regarding threads,
+  %%DynamoRIO links directly to lower-level C library routines that
+\subsubsection{Pin}
+  Similarly to DynamoRIO, Pin~\cite{pin} consists of
+  a virtual machine, a code cache and an instrumentation API
+  which enable users to manipulate application code.
+  Its binaries were downloaded already
+  compiled from its site~\cite{pinsrc}.
+  Pin virtual
+  machine consists of a just-in-time compiler (JIT), an emulator,
+  and a dispatcher. The application is emulated based on the
+  following algorithm:
+  The JIT compiles and instruments application code, which is then
+  launched by the dispatcher and stored in the code cache, the
+  only area where application code is executed.
+  Switching context between the virtual machine and the code cache
+  involves saving and restoring the application register state.
+  The emulator is responsible for the interpretation of
+  instructions that cannot be executed directly and for system
+  calls that require special handling from the virtual machine.
+
+  % Injecting Pin
+  Pin is injected into the address space of an application. Unlike
+  DynamoRIO, Pin uses the Unix Ptrace API to gain control. After
+  initializing, Pin loads the Pintool, that is,
+  the tool created using Pin instrumentation API, 
+  and starts it running. Then the Pintool
+  initializes itself and requests application
+  start-up. Pin creates the initial context and starts jitting
+  the application. Ptrace mechanism allows Pin to attach to
+  an already running process and to detach from an instrumented
+  process, which then executes the original, uninstrumented code.
+  %Address space conflicts avoidance
+  Although applications share the same address space as Pin, they
+  do not share any libraries, possibly resulting in more than
+  one copy of libraries. This avoids unwanted interactions between
+  them, as the application will have its own copy of a
+  non-reentrant library.
+
+  Pin injection method has three advantages over the technique
+  used by DynamoRIO.
+  First, it works with statically-linked binaries, which is the
+  case of this experiment. However, this
+  DynamoRIO flaw can be overcome by
+  explicitly calling {\tt drloader} to inject DynamoRIO, further
+  detailed in section \ref{sec:methodology}.
+  Second, loading an extra shared library will shift all of the
+  application shared libraries and some dynamically allocated
+  memory to a higher address when compared to an uninstrumented
+  execution. This further and undesirably modifies the
+  original behavior of the application. Third, the instrumentation
+  tool cannot obtain control of the application until after the
+  shared-library loader has partially executed, while Pin's
+  method is able to instrument the very first instruction in the
+  program.
+
+  % JIT Compiler
+  Furthermore, Pin JIT compiles directly into the same ISA without
+  relying on intermediate formats. An application is compiled
+  one trace at a time. The Pin concept of trace is a
+  straight-line sequence of instructions which terminates at one
+  of the conditions: (i) an unconditional control transfer (branch,
+  call, or return), (ii) a predefined number of conditional
+  control transfers, or (iii) a predefined number of instructions
+  have been fetched in the trace. This implies a trace can
+  have multiple side-exits in addition to the last exit. An exit
+  initially branches to a stub, which redirects the control to
+  the virtual machine. The resolution of the target address then
+  takes place, generating a new trace for the target if it has
+  not been generated before, and execution resumes at the target
+  trace.
+
+  % JIT Optimizations
+  % Trace Linking
+  Given this Pin basic functionality, it has additional features
+  which attempt to improve its performance. For instance,
+  Pin tries to bypass stubs and the virtual machine by branching
+  a trace exit directly to its target trace, a process called
+  trace linking. Direct jump resolution is simply patching the
+  branch at the end of one trace to jump to the target trace.
+  An indirect control transfer, however, has multiple possible
+  targets and therefore needs some sort of target-prediction
+  mechanism. Pin's approach translates the indirect jump into
+  a move and a direct jump, which is the first predicted address.
+  In case of wrong prediction, another prediction target is
+  selected. Another failure will cause Pin to branch to a hash
+  table in search for the target. As a last resort, the control
+  can be transfered to the virtual machine to indirect target
+  resolution.
+
+  Pin's indirect linking mechanism holds three main differences
+  compared to the approach taken by DynamoRIO.
+  First, The entire chain of DynamoRIO
+  is generated at one time and embedded at the translation
+  of the indirect jump, preventing any later predicted target
+  to be added onto the chain. In contrast, Pin mechanism builds
+  the chain incrementally, allowing newly seen targets to be
+  inserted in any order. The second difference is that Pin hash
+  table is local, whereas DynamoRIO uses a global hash table for
+  all indirect jumps. Local hash table has been shown to
+  typically offer higher performance~\cite{localcache}. The third
+  difference is that Pin applies function cloning to accelerate
+  returns, the most common form of indirect control transfers.
+
+  % Register Reallocation
+  Another Pin feature aiming performance is its register
+  reallocation mechanism. The JIT must ensure that inserted calls
+  does not overwrite any application registers and that these
+  virtual registers matches its physical bindings at the entrance
+  of a destination trace, which adds some emulation overhead. Pin
+  minimizes this using register liveness analysis and
+  reconciliation of register bindings, based on traces. A dead
+  register, for example, can be reused without spilling it to memory.
+  Pin keeps a virtual register in the same physical register
+  across traces whenever possible, and generates compensation code
+  to reconcile register bindings when they differ. This approach
+  is more efficient than flushing registers to memory, as 
+  bindings show differences in only one or two virtual registers
+  in practice~\cite{pin}.
+  % Paragraph?
+  As a consequence, Pin must remember the binding at a trace's
+  entry.
+  The definition of Pin trace can therefore be resumed to the pair
+  of its entry address and some static properties that hold at
+  the trace's entry, called static context.
+  The JIT will only generate a new trace
+  if it cannot find a compatible one. Two traces are compatible if
+  they have the same address and their static context are either
+  identical or different in only their register bindings, which
+  can be overcome by reconciling the bindings.
+
+  % Optimizing instrumentation performance
+  As most of Pin instrumentation slowdown comes from executing
+  the instrumentation code rather than the compilation
+  time~\cite{pin}, Pin spend some time analyzing and optimizing
+  instrumentation code.
+  For example, frequently-executed counting and tracing are
+  inlined. Without inlining, Pin would call a bridge routine
+  that would save all caller-saved registers, set up analysis
+  routine arguments, and finally call the analysis routine.
+  In other words, inlining eliminates the bridge, saving two calls
+  and two returns, and exchanges the expensive caller-saved register
+  saving for a register renaming and, if needed, spilling.
+  Furthermore, inlining enables other optimizations like
+  constant folding of analysis routine arguments.
+
+  Moreover, an additional optimization is performed exclusively
+  for the x86 eflags, as most analysis routines modify this
+  conditional flags register. Pin uses liveness analysis on
+  eflags, frequently discovering eflags are dead, therefore
+  eliminating savings and restores.
+  This optimization is important
+  due to expensive stacks operations needed to access this register.
+  Finally, the Pintool writer can specify when a analysis routine
+  can be inserted anywhere inside a basic block or a trace,
+  opening a number of optimization opportunities
+  through call scheduling.
+
+  % Check if DynamoRIO's trace linking is well explained.
+\subsection{Methodology}
+  \label{sec:methodology}
+%Metodologia: descreva a metodologia utilizada para coletar 
+% e reportar os resultados 
+
+  This section depicts the construction of configuration files
+  used, how the virtual machines were compiled or downloaded,
+  and some assumptions made in order to make a better display
+  of results.
+
+  SPEC benchmarks are subdivided in two sets:
+  	specint, the INT set, composed mainly of integer operations,
+	whose benchmarks are
+		410.bwaves,
+        416.gamess,
+        433.milc,
+        434.zeusmp,
+        435.gromacs,
+        436.cactusADM,
+        437.leslie3d,
+        444.namd,
+        447.dealII,
+        450.soplex,
+        453.povray,
+        454.calculix,
+        459.GemsFDTD,
+        465.tonto,
+        470.lbm,
+        481.wrf, and
+        482.sphinx3;
+	and specfp, the FP set, which focus on floating-point operations,
+	whose benchmarks are
+		400.perlbench,
+        401.bzip2,
+        403.gcc,
+        429.mcf,
+        445.gobmk,
+        456.hmmer,
+        458.sjeng,
+        462.libquantum,
+        464.h264ref,
+        471.omnetpp,
+        473.astar, and
+        483.xalancbmk.
+  Taking that on board, any citation of INT or FP benchmarks
+  refers to these set of benchmarks, unless stated otherwise.
+
+  With the SPEC tools %and the QEMU binaries
+  already compiled, the SPEC runs could be initiated.
+  All runs were made through the invocation of the 
+  \texttt{runspec} tool, which called requested benchmarks, saving
+  any errors and run statistics, such as running times. In order to 
+  reduce random noises on the experiments, some CPU-consuming
+  services were also disabled, such as gdm - GNOME
+  display manager -, cups - the Common Unix Printing System -,
+  pulseaudio - a sound server -, and the ssh server, which enables
+  remote access.
+
+  Tables \ref{tab:x86config} and \ref{tab:armconfig} further
+  detail configurations about the experiments.
+  These settings can be used on SPEC configuration files,
+  attributing the values on the right to the variables on the left
+  by the use of an equal sign. The {\tt rebuild} flag
+  were only set to 0 after the benchmarks were already compiled,
+  thus avoiding accidental rebuilding.
+  % Hash Stuff
+  Note that SPEC tools include hashes on the configuration files
+  used to compile the benchmarks. Taking that on board,
+  we need to copy the hashes to other configuration files
+  if we do not want the benchmarks to be recompiled.
+  On our experiment, we generated the configuration files as needed,
+  based on existent ones. Thus, in the end,
+  all configuration files responsible for emulation
+  were generated from the configuration file that had made
+  the compilation, therefore containing the hashes and skipping
+  compilation on future runs.
+  %%%Detailed configuration about each
+  %%%run is given throughout the
+  
+  % Emulation
+  Plus, the emulation variables were only set when the benchmarks
+  were being emulated, according to the virtual machine that was
+  doing the emulation.
+  Each line of submit was used if and only if the virtual machine
+  in parenthesis were used.
+  If there is no parenthesis, that line was always used.
+  Thus, in QEMU-emulated runs, runspec's
+  {\tt submit} variable would evaluate to
+  ``{\tt \$\{QEMUBIN\} \$command}'', where {\tt QEMUBIN}
+  is the variable that holds the full path to the QEMU binary,
+  set in the configuration file. On our experiment, we generated the
+  configuration file for QEMU first, then generated DynamoRIO and
+  Pin configurations based on the previously generated QEMU file.
+
+  The QEMU softwares used in our experiments were
+  \texttt{qemu-arm} for ARM, \texttt{qemu-i386} for 32-bits x86,
+  and \texttt{qemu-x86\_64} for 64-bits x86 emulation.
+  Other binaries generated in the
+  compilation process for QEMU were not used. 
+  QEMU version \qemuversion \space was compiled on both systems
+  using the commands presented on table \ref{tab:qemucompile}.
+  %
+  \begin{table}
+  \centering
+  \begin{tabular}{|l|}
+  \hline
+  \multicolumn{1}{|c|}{\bf Qemu Compilation Commands} \\
+  \hline
+   \tt mkdir build \\
+   \tt mkdir install \\
+   \tt cd build \\
+   \tt unset LD\_CONFIG\_PATH \\
+   \tt unset PKG\_CONFIG\_PATH \\
+   \tt export LD\_CONFIG\_PATH=/path/to/glib/lib \\
+   \tt export PKG\_CONFIG\_PATH=/path/to/glib/lib/pkgconfig \\
+   \tt ../qemu-1.1.1/configure --disable-system --enable-user
+  $\backslash$\\
+  \tt --disable-sdl --disable-virtfs --disable-vnc --disable-brlapi
+  $\backslash$\\
+  \tt --disable-bluez --disable-slirp --disable-kvm
+  --disable-vhost-net
+  $\backslash$\\
+  \tt --disable-libiscsi --disable-smartcard --disable-smartcard-nss
+  $\backslash$\\
+  \tt --disable-usb-redir --disable-sparse --disable-debug-tcg
+  $\backslash$\\
+  \tt --disable-xen --disable-vnc-tls --disable-vnc-sasl
+  $\backslash$\\
+  \tt --disable-vnc-jpeg --disable-vnc-png --disable-vnc-thread
+  $\backslash$\\
+  \tt --disable-curses --disable-curl
+  $\backslash$\\
+  \tt --target-list=i386-softmmu,x86\_64-softmmu,arm-softmmu,
+  $\backslash$\\
+  \tt i386-linux-user,x86\_64-linux-user,%
+  	  arm-linux-user,armeb-linux-user
+  $\backslash$\\
+  \tt --block-drv-whitelist=oss,alsa,sdl,esd,pa,fmod --static
+  $\backslash$\\
+  \tt --extra-cflags="-O3 -m64 -static -L/path/to/glib/lib"
+  $\backslash$\\
+  \tt --extra-ldflags=-L/path/to/glib/lib
+  $\backslash$\\
+  \tt --prefix=../install
+  $\backslash$\\
+  %2>\&1 | tee ../configure64.out
+  \tt \&\& make LDFLAGS="-L/path/to/glib/lib" \\
+  %2>\&1 | tee ../make64.out
+  \hline
+  \end{tabular}
+  \caption{QEMU Compilation Commands}
+  \label{tab:qemucompile}
+  \end{table}
+  However, QEMU required a newer
+  glib version than the one we had in our systems, so we needed
+  to compile it for ARM and 32-bits and 64-bits x86 as well,
+  which was done using its source code~\cite{glibsrc}
+  only explicitly setting the {\tt -O3} and the word size flags.
+  %
+  According
+  to our results, presented on section \ref{sec:results},
+  QEMU achieved a performance of a hundred times slower
+  on some benchmarks. This overhead is 
+  %too
+  unnecessarily
+  slow to the emulation standards~\cite{stardbt}.
+  %,which is an overhead of about 20\%
+  We decided then to investigate the causes of this overhead.
+  The perf~\cite{perf} tool version \perfversion \space was used
+  to profile the SPEC emulation done by QEMU.
+  The {\tt runspec} variable on
+  the configuration file was changed to invoke perf as well.
+  Specifically, in these profiling runs, %<<
+  runspec's {\tt submit} variable would evaluate to
+  ``{\tt \$\{PERFBIN\} record -A -o 
+  \$\{PERFOUT\} 
+  \$\{QEMUBIN\} \$command}'',
+  where {\tt PERFBIN} is the perf
+  executable, {\tt PERFOUT} is the file perf will place data,
+  and {\tt QEMUBIN} is the QEMU binary.
+  
+  Profiling runs were done
+  only in 64-bits qemu-x86\_64, as they were enough to reveal QEMU
+  slowness causes. Profiling run results consist basically of
+  time spent on each area of code. Perf, more specifically,
+  uses counters to statistically determine how much time was
+  spent on each symbol.
+  We gathered these times in meaningful pieces to our experiment
+  according to the following criteria:
+
+  {\bf \benchmarkname} \space\space
+  Time spent in the benchmark itself.
+  % tag:borin
+  A benchmark code can be identified in our profiling results
+  as rows that have {\tt qemu-x86\_64} as a command and a
+  hexadecimal address as its symbol. The explanation behind
+  this association is that the benchmark is fetched from its file
+  into the dynamically-allocated code cache of QEMU. As emulators
+  can not afford to manage symbols for performance reasons,
+  no information becomes related to their code, except those
+  needed, such as hexadecimal addresses, used by jumps.
+  This reasoning is sustained because QEMU does not use
+  dynamically-generated code other than the benchmark code itself.
+  % end of tag 
+  Also, we rebuilt QEMU for profiling runs using
+  the same configuration as before, but no {\tt make install}
+  command was issued, as it would strip - or discard the symbols
+  of - QEMU binaries. Instead, we collected its binaries manually
+  from the build directory.
+
+  {\bf \mutexname} \space\space
+  Time spent in the {\tt \_\_pthread\_mutex\_unlock} and
+  the {\tt \_\_pthread\_mutex\_lock} functions.
+  These functions are responsible for
+  synchronizing processes or threads, ensuring no two of them
+  are concurrently accessing a shared resource.
+  
+  {\bf \fpname} \space\space
+  Time spent in functions whose implementation was in the
+  source-code {\it fpu} directory.
+  All files in that directory, as in qemu version \qemuversion,
+  have their names starting with
+  ``softfloat'', which is the IEC/IEEE Floating-point Arithmetic
+  Package that emulates floating-point operations with software.
+  
+  {\bf \qname} \space\space
+  Time spent in qemu functions other than the ones already
+  specified above. This area is the
+  emulation of code discounting the time spent on mutexes and
+  floating-point software emulation.
+  
+  {\bf \perfname} \space\space
+  % tag:borin
+  Time spent in the profiling tool itself.
+  % improve TODO
+  This area does not affect our results as
+  it does not reach a high percentage and
+  discrepancy of times in other areas still show.
+  % end of tag
+
+  % tag:others
+  The areas does not always add up to exactly 100\% due to
+  rounding, but they always reach at least 99.5\%.
+    
+% Configuration files table
+% x86 Configuration Table
+\newcounter{submitcounter}
+\newcommand{\submit}[1][]{%
+	\setcounter{submitcounter}{1}%
+	\ifthenelse{\equal{#1}{perfanddyn32}}{%
+		\tt submit\echocounter{submitcounter} (perf)
+			& \tt \$\{PERFBIN\} record      \\
+		\tt submit\echocounter{submitcounter} (perf)
+			& \tt -A -o \$\{PERFOUT\}    \\
+		\tt submit\echocounter{submitcounter} (dynamorio)
+			& \tt \$\{DYNBIN\} [-32]  \\
+		\tt submit\echocounter{submitcounter} (pin)
+			& \tt \$\{PINBIN\} --  \\
+	}{%
+	\ifthenelse{\equal{#1}{perfanddyn64}}{%
+		\tt submit\echocounter{submitcounter} (perf)
+			& \tt \$\{PERFBIN\} record      \\
+		\tt submit\echocounter{submitcounter} (perf)
+			& \tt -A -o \$\{PERFOUT\}    \\
+		\tt submit\echocounter{submitcounter} (dynamorio)
+			& \tt \$\{DYNBIN\} [-64]  \\
+		\tt submit\echocounter{submitcounter} (pin)
+			& \tt \$\{PINBIN\} --  \\
+	}{}}%
+	\tt submit\echocounter{submitcounter} (QEMU)
+   		& \tt \$\{QEMUBIN\}                \\
+	\tt submit\echocounter{submitcounter} 
+  		& \tt \$command                     \\
+	\tt use\_submit\_for\_speed & yes \\
+}
+\ifthenelse{\equal{\printtables}{t}}{
+\begin{table}[!htp]
+\begin{footnotesize}
+\newcounter{fncounter}
+\setcounter{fncounter}{1}
+\begin{tabular}{||l||l||}%p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.24cm}||
+  \hline
+  \hline
+  \multicolumn{2}{||c||}{}\\
+  \multicolumn{2}{||c||}{{\bf 64-bits x86 Configuration}}\\
+  \multicolumn{2}{||c||}{}\\
+  \hline
+  \hline
+  tune & base\\
+  \hline
+  runlist & all\\
+  \hline
+  rebuild\printcounter{fncounter} & 0 \\
+  \hline
+  \multicolumn{2}{||c||}{Compilers}\\
+  \hline
+  CC      & gcc      4.6.3 \\
+  CXX     & g++      4.6.3 \\
+  FC      & gfortran 4.6.3 \\
+  
+  \hline
+  \multicolumn{2}{||c||}{Emulation Variables\printcounter{fncounter}}\\
+  \hline
+  \submit[perfanddyn64]
+  \hline
+  \multicolumn{2}{||c||}{Optimization flags}\\
+  \hline
+  COPTIMIZE       & -O3 \\
+  CXXOPTIMIZE     & -O3 \\
+  FOPTIMIZE       & -O3 \\
+  EXTRA\_OPTIMIZE & -static \\
+  \hline
+  \multicolumn{2}{||c||}{Portability Flags}\\
+  \hline
+  \multicolumn{2}{||l||}{default:}\\
+  \hline
+  PORTABILITY     & -DSPEC\_CPU\_LP64\\
+  \hline
+  \multicolumn{2}{||l||}{400.perlbench:}\\
+  \hline
+  CPORTABILITY    & -DSPEC\_CPU\_LINUX\_X64\\
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{403.gcc:}\\
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{433.milc:}\\
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{445.gobmk:}\\ 
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{456.hmmer:}\\
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{462.libquantum:}\\
+  \hline
+  CPORTABILITY    & -DSPEC\_CPU\_LINUX\\
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{464.h264ref:}\\
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{470.lbm:}\\
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{482.sphinx3:}\\
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{483.xalancbmk:}\\
+  \hline
+  CXXPORTABILITY  & -DSPEC\_CPU\_LINUX\\
+  \hline
+  \multicolumn{2}{||l||}{481.wrf:}\\
+  \hline
+  CPORTABILITY    & -DSPEC\_CPU\_CASE\_FLAG\\
+                  & -DSPEC\_CPU\_LINUX\\
+  \hline
+  \hline
+\end{tabular}\qquad\setcounter{fncounter}{1}
+\begin{tabular}{||l||l||}%p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.24cm}||
+  \hline
+  \hline
+  \multicolumn{2}{||c||}{}\\
+  \multicolumn{2}{||c||}{{\bf 32-bits x86 Configuration}}\\
+  \multicolumn{2}{||c||}{}\\
+  \hline
+  \hline
+  tune & base\\
+  \hline
+  runlist & all\\
+  \hline
+  rebuild\printcounter{fncounter} & 0 \\
+  \hline
+  \multicolumn{2}{||c||}{Compilers}\\
+  \hline
+  CC      & gcc      4.6.3 \\
+  CXX     & g++      4.6.3 \\
+  FC      & gfortran 4.6.3 \\
+  
+  \hline
+  \multicolumn{2}{||c||}{Emulation Variables\printcounter{fncounter}}\\
+  \hline
+  \submit[perfanddyn32]
+  %\hline
+  \hline
+  \multicolumn{2}{||c||}{Optimization flags}\\
+  \hline
+  COPTIMIZE       & -O3 \\
+  CXXOPTIMIZE     & -O3 \\
+  FOPTIMIZE       & -O3 \\
+  EXTRA\_OPTIMIZE & -m32 -static \\
+  \hline
+  \multicolumn{2}{||c||}{Portability Flags}\\
+  \hline
+  \multicolumn{2}{||l||}{default:}\\
+  \hline
+  PORTABILITY     & -DSPEC\_CPU\_ILP32\\
+  \hline
+  \multicolumn{2}{||l||}{400.perlbench:}\\
+  \hline
+  CPORTABILITY    & -DSPEC\_CPU\_LINUX\_IA32\\
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{403.gcc:}\\
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{433.milc:}\\
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{445.gobmk:}\\ 
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{456.hmmer:}\\
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{462.libquantum:}\\
+  \hline
+  CPORTABILITY    & -DSPEC\_CPU\_LINUX\\
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{464.h264ref:}\\
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{470.lbm:}\\
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{482.sphinx3:}\\
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{483.xalancbmk:}\\
+  \hline
+  CXXPORTABILITY  & -DSPEC\_CPU\_LINUX\\
+  \hline
+  \multicolumn{2}{||l||}{481.wrf:}\\
+  \hline
+  CPORTABILITY    & -DSPEC\_CPU\_CASE\_FLAG\\
+                  & -DSPEC\_CPU\_LINUX\\
+  \hline
+  \hline
+\end{tabular}
+\caption{x86 Configuration}
+\label{tab:x86config}
+\end{footnotesize}
+\end{table}
+}{}%
+%
+% ARM Configuration Table
+\ifthenelse{\equal{\printtables}{t}}{
+\begin{table}[!htp]
+\begin{footnotesize}
+\centering
+\setcounter{fncounter}{1}
+\begin{tabular}{||l||l||}%p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.24cm}||}
+  \hline
+  \hline
+  \multicolumn{2}{||c||}{}\\
+  \multicolumn{2}{||c||}{{\bf ARM Configuration}}\\
+  \multicolumn{2}{||c||}{}\\
+  \hline
+  \hline
+  tune & base\\
+  \hline
+  runlist & all \^{}464.h264ref \^{}482.sphinx3\printcounter{fncounter}\\
+  \hline
+  rebuild\printcounter{fncounter} & 0 \\
+  \hline
+  \multicolumn{2}{||c||}{Compiler}\\
+  \hline
+  CC      & gcc      4.4.3 \\
+  CXX     & g++      4.4.3 \\
+  FC      & gfortran 4.4.3 \\
+  
+  \hline
+  \multicolumn{2}{||c||}{Emulation Variables\printcounter{fncounter}}\\
+  \hline
+  \submit
+  \hline
+  \multicolumn{2}{||c||}{Optimization flags}\\
+  \hline
+  COPTIMIZE       & -O3 \\
+  CXXOPTIMIZE     & -O3 \\
+  FOPTIMIZE       & -O3 \\
+  EXTRA\_OPTIMIZE & -static \\
+  \hline
+  \multicolumn{2}{||c||}{Portability Flags}\\
+  \hline
+  \multicolumn{2}{||l||}{default:}\\
+  \hline
+  PORTABILITY     & -DSPEC\_CPU\_ILP32\\
+  \hline
+  \multicolumn{2}{||l||}{400.perlbench:}\\
+  \hline
+  CPORTABILITY    & -DSPEC\_CPU\_LINUX\\
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{403.gcc:}\\
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{433.milc:}\\
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{445.gobmk:}\\ 
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{456.hmmer:}\\
+  \hline
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  \multicolumn{2}{||l||}{435.gromacs:}\\
+  \hline
+  COPTIMIZE       & -O1\printcounter{fncounter}\\
+  \hline
+  \multicolumn{2}{||l||}{462.libquantum:}\\
+  \hline
+  CPORTABILITY    & -DSPEC\_CPU\_LINUX\\
+  EXTRA\_LDFLAGS  & -lm\\
+  \hline
+  %\multicolumn{2}{||l||}{464.h264ref:}\\
+  %\hline
+  %EXTRA\_LDFLAGS  & -lm\\
+  %\hline
+  %\multicolumn{2}{||l||}{482.sphinx3:}\\
+  %\hline
+  %EXTRA\_LDFLAGS  & -lm\\
+  %\hline
+  \multicolumn{2}{||l||}{483.xalancbmk:}\\
+  \hline
+  CXXPORTABILITY  & -DSPEC\_CPU\_LINUX\\
+  \hline
+  \multicolumn{2}{||l||}{481.wrf:}\\
+  \hline
+  CPORTABILITY    & -DSPEC\_CPU\_CASE\_FLAG\\
+                  & -DSPEC\_CPU\_LINUX\\
+  \hline
+  \hline
+\end{tabular}
+\caption{ARM Configuration}
+\label{tab:armconfig}
+\end{footnotesize}
+\end{table}
+}{}%
+%
+  % DynamoRIO
+  Then, we moved to DynamoRIO. DynamoRIO was obtained
+  directly from its site~\cite{dynsrc}. We did not compile it
+  ourselves. We used the version \dynamorioversion.
+  Its configuration file
+  is really similar to the QEMU one. Therefore, we used a script
+  to generate the DynamoRIO configuration file based on QEMU
+  configuration, presented on table \ref{tab:dynconfig}.
+  The tweaks made were the necessary ones to correctly
+  emulate the benchmarks with DynamoRIO.
+
+  For example, our benchmarks were compiled statically and,
+  as such,
+  they do not invoke the linker in order to run. This prevents
+  the injection of DynamoRIO code on the application, as the
+  default mode of DynamoRIO insertion is via the environment
+  variable {\tt LD\_PRELOAD}, which is handled by the linker.
+  Given that our benchmarks were statically compiled, we needed
+  an alternative method of injection. Skimming the {\tt drrun}
+  script, we could see that the undocumented option {\tt -early}
+  triggers a {\tt drloader} call with the DynamoRIO main library
+  as its first argument and the application as following arguments.
+  This early injects DynamoRIO and fakes the application as an 
+  argv[0], sufficing our needs.
+  Optionally, {\tt -32} and {\tt -64} options can be added
+  to the submit parameters when
+  the word size of DynamoRIO and of the benchmarks differs.
+  \begin{table}
+  	  \begin{footnotesize}
+	  \centering
+	  \begin{tabular}{|l|l|}
+	  \hline
+	  \multicolumn{2}{|c|}{\bf %
+	  	Generating DynamoRIO config from QEMU's} \\
+	  \hline
+	  \multicolumn{2}{|c|}{Environment Variables} \\
+	  \hline
+	  {\tt SRC\_FILE} & QEMU configuration file \\
+	  {\tt NEW\_FILE} & DynamoRIO file to be generated \\
+	  \hline
+	  \multicolumn{2}{|c|}{Commands} \\
+	  \hline
+	  \multicolumn{2}{|l|}{\tt cp \$SRC\_FILE \$NEW\_FILE} \\
+	  \multicolumn{2}{|l|}{\tt
+					sed -i "s\#QEMUBIN=.*\#DYNAMORIOBIN=\$EXE\#"
+						\$NEW\_FILE
+		} \\
+	  \multicolumn{2}{|l|}{\tt
+					sed -i "s\#submit=.*\#submit=\$\{DYNAMORIOBIN\}
+						 \$command\#" \$NEW\_FILE
+		} \\
+	  \hline
+	  \end{tabular}
+	  \caption{DynamoRIO Configuration Setup}
+	  \label{tab:dynconfig}
+	  \end{footnotesize}
+  \end{table}
+  
+  Next, we ran the Intel Pin framework.
+  Pin binaries was downloaded from Intel site~\cite{pinsrc}.
+  The version used on this experiment was \pinversion, compiled
+  with \pincompiler.
+  As before, the configuration
+  file was slightly changed. Table \ref{tab:pinconfig} presents the
+  script to create pin configuration file based on QEMU one.
+  Only two configuration files were created for DynamoRIO and Pin.
+  This is sufficient as Pin or DynamoRIO invoked to emulate an application
+  of dissimilar word size simply transfers control to the binary
+  of appropriate word size.
+  \begin{table}
+  	  \begin{footnotesize}
+	  \centering
+	  \begin{tabular}{|l|l|}
+	  \hline
+	  \multicolumn{2}{|c|}{\bf %
+	  	Generating Pin config from QEMU's} \\
+	  \hline
+	  \multicolumn{2}{|c|}{Environment Variables} \\
+	  \hline
+	  {\tt SRC\_FILE} & QEMU configuration file \\
+	  {\tt NEW\_FILE} & Pin file to be generated \\
+	  \hline
+	  \multicolumn{2}{|c|}{Commands} \\
+	  \hline
+	  \multicolumn{2}{|l|}{\tt cp \$SRC\_FILE \$NEW\_FILE} \\
+	  \multicolumn{2}{|l|}{\tt
+					sed -i "s\#QEMUBIN=.*\#PINBIN=\$EXE\#"
+						\$NEW\_FILE
+		} \\
+	  \multicolumn{2}{|l|}{\tt
+					sed -i "s\#submit=.*\#submit=\$\{PINBIN\}
+					--	\$command\#" \$NEW\_FILE
+		} \\
+	  \hline
+	  \end{tabular}
+	  \caption{Pin Configuration Setup}
+	  \label{tab:pinconfig}
+	  \end{footnotesize}
+  \end{table}
+  
+\newpage
+\section{Results}
+  \label{sec:results}
+  This section shows the results
+  from SPEC CPU experiments and QEMU profiling.
+  A zero indicates that the run experiment for 
+  that benchmark could not be made.
+
+  The base reference time shown on tables is based on a
+  reference machine used by SPEC to normalize the
+  performance metrics used. %in the CPU2006 suites. 
+  Each benchmark is run and measured on that reference machine to 
+  establish a reference time for that benchmark, presented on run
+  time tables.
+  These times are then used in the SPEC calculations as a
+  reference ratio of 1.00. Thus, the numbers presented on ratio
+  tables below express how many times our systems were faster,
+  in case of values greater than one, or slower, in case of
+  values less than one, than SPEC reference 
+  machine for SPEC CPU benchmarks.
+
+  Note that QEMU wordsize does not define the word size of the
+  benchmark, as the word size of QEMU binaries defines
+  where QEMU should run
+  natively, not what QEMU will emulate.
+  For instance, a 32-bits \texttt{qemu-i386}
+  emulates 32-bits x86 binaries, as 32-bits \texttt{qemu-x86\_64} 
+  emulates 64-bits x86 binaries, but both were generated to run
+  on 32-bits x86 architecture. In other words, each table or
+  graphic refers to the set of benchmarks compiled for either
+  32 or 64 bits, containing results of native runs, 32-bits
+  QEMU, 64-bits QEMU, DynamoRIO and Pin emulated runs.
+
+  The charts show us that QEMU x86 emulation is on average
+  42 times slower than native execution for the
+  SPEC CPU benchmark, being 32-bits binaries of QEMU slightly
+  faster than 64-bits ones.
+  However, while some benchmark performances were only a few
+  times slower when emulated, others had their execution
+  time increased by more than a hundred, revealing a high
+  discrepancy in emulation among QEMU emulation of
+  SPEC CPU benchmarks.
+  As for the emulation of DynamoRIO and Pin,
+  the results showed them to be affordable, revealing
+  most of their emulation between one and
+  two times slower, rarely reaching the mark
+  of 4 times slower.
+
+% Run Time and Ratio Tables
+\npdecimalsign{.}%
+\nprounddigits{2}%
+\DTLloaddb{int}{\tableint}
+\DTLloaddb{fp}{\tablefp}
+% Test
+%\newcommand{\qemuwordsize}{qemu-i386}
+%\newcommand{\rt}{Ratio}
+% variable stuff on tables
+\newcommand{\wordsize}{}
+\newcommand{\qemuname}{}
+\newcommand{\baseref}{}
+\newcommand{\reftime}{}
+\newcommand{\refvalue}{}
+\newcommand{\tablesize}{}
+\newcommand{\numcolumns}{}
+\newcommand{\sumormean}{}
+\newcommand{\arch}{}
+\ifthenelse{\equal{\printtables}{t}}{
+% QEMU Tables
+\foreach \qemuwordsize in {qemu-i386,qemu-x86_64} {
+\foreach \rt in {Run Time,Ratio} {
+  \ifthenelse{\equal{\qemuwordsize}{qemu-i386}}%
+    {
+       \renewcommand{\wordsize}{32-bits}
+       \renewcommand{\qemuname}{qemu-i386}
+    }
+    {
+       \renewcommand{\wordsize}{64-bits}
+       \renewcommand{\qemuname}{qemu-x86\_64}
+    }
+  \ifthenelse{\equal{\rt}{Ratio}}%
+    {
+       %\renewcommand{\tablesize}{||l|r|r|r||}
+	   \renewcommand{\tablesize}{\begin{tabular}{||l|r|r|r||}}
+	   \renewcommand{\numcolumns}{4}
+       \renewcommand{\baseref}{}
+       \renewcommand{\reftime}{}
+       \renewcommand{\refvalue}{}
+       \renewcommand{\sumormean}{BenchmarkM}
+    }
+    {
+       %\renewcommand{\tablesize}{||l|r|r|r|r||}
+	   \renewcommand{\tablesize}{\begin{tabular}{||l|r|r|r|r||}}
+	   \renewcommand{\numcolumns}{5}
+       \renewcommand{\baseref}{\bfseries Base Ref &}
+       \renewcommand{\reftime}{\bfseries Time &}
+       \renewcommand{\refvalue}{\r &}
+       \renewcommand{\sumormean}{Benchmark}
+    }
+	\begin{table}[!htp]
+	\begin{footnotesize}
+		\DTLsetseparator{,}
+		\centering
+		\tablesize%\begin{tabular}{\tablesize}
+		\hline
+		\bfseries Benchmark &
+		\baseref
+		\bfseries \wordsize &
+		\bfseries 32-bits &
+		\bfseries 64-bits \\
+		&
+		\reftime
+		\bfseries Native  &
+		\bfseries \qemuname &
+		  \bfseries \qemuname \\ \hline%
+		\multicolumn{\numcolumns}{||c||}{\bfseries INT Benchmarks}\\
+		\hline
+		\DTLforeach*{int}{%
+		\benchmark={\sumormean},\r={Base Ref Time},%
+		\native={\wordsize\space native \rt},%
+		\qemu={32-bits \qemuwordsize\space\rt},%
+		\qemux={64-bits \qemuwordsize\space\rt}}{%
+			\DTLiffirstrow{}{\tabularnewline \hline}%
+			\benchmark & \refvalue \numprint{\native}
+			& \numprint{\qemu} & \numprint{\qemux}%
+		}
+		\tabularnewline \hline
+		\multicolumn{\numcolumns}{||c||}{\bfseries FP Benchmarks}\\
+		\hline
+		\DTLforeach*{fp}{%
+		\benchmark={\sumormean},\r={Base Ref Time},%
+		\native={\wordsize\space native \rt},%
+		\qemu={32-bits \qemuwordsize\space\rt},%
+		\qemux={64-bits \qemuwordsize\space\rt}}{%
+			\DTLiffirstrow{}{\tabularnewline \hline}%
+			\benchmark & \refvalue \numprint{\native}
+			& \numprint{\qemu} & \numprint{\qemux}%
+		}
+		\tabularnewline \hline
+		\end{tabular}
+		\caption{\wordsize\space x86 Benchmarks \rt s for QEMU}
+	\end{footnotesize}
+	\end{table}
+} %end for
+} %end for
+% DynamoRIO Tables
+\newcommand{\rt}{Run Time}
+%\renewcommand{\arch}{ia32}
+\foreach \arch in {ia32,ia64} {
+\foreach \rt in {Run Time,Ratio} {
+	\ifthenelse{\equal{\arch}{ia32}}%
+	{
+	   \renewcommand{\wordsize}{32-bits}
+	   \renewcommand{\qemuname}{qemu-i386}
+	}
+	{
+	   \renewcommand{\wordsize}{64-bits}
+	   \renewcommand{\qemuname}{qemu-x86\_64}
+	}
+	\ifthenelse{\equal{\rt}{Ratio}}%
+	{
+	   %\renewcommand{\tablesize}{||l|r|r|r||}
+	   \renewcommand{\tablesize}{\begin{tabular}{||l|r|r|r||}}
+	   \renewcommand{\numcolumns}{4}
+	   \renewcommand{\baseref}{}
+	   \renewcommand{\reftime}{}
+	   \renewcommand{\refvalue}{}
+	   \renewcommand{\sumormean}{BenchmarkM}
+	}
+	{
+	   %\renewcommand{\tablesize}{||l|r|r|r|r||}
+	   \renewcommand{\tablesize}{\begin{tabular}{||l|r|r|r|r||}}
+	   \renewcommand{\numcolumns}{5}
+	   \renewcommand{\baseref}{\bfseries Base Ref &}
+	   \renewcommand{\reftime}{\bfseries Time &}
+	   \renewcommand{\refvalue}{\r &}
+	   \renewcommand{\sumormean}{Benchmark}
+	}
+	\begin{table}[!htp]
+	\begin{footnotesize}
+		\DTLsetseparator{,}
+		\centering
+		\tablesize%\begin{tabular}{\tablesize}
+		\hline
+		\bfseries Benchmark &
+		\baseref
+		\bfseries \wordsize &
+		\bfseries DynamoRIO &
+		\bfseries Pin \\
+		&
+		\reftime
+		\bfseries Native  &
+		&
+		\\ \hline%
+		\multicolumn{\numcolumns}{||c||}{\bfseries INT Benchmarks}\\
+		\hline
+		\DTLforeach*{int}{%
+		\benchmark={\sumormean},\r={Base Ref Time},%
+		\native={\wordsize\space native \rt},%
+		\dyn={\wordsize\space dynamorio \rt},%
+		\pin={\wordsize\space pin \rt}}{%
+			\DTLiffirstrow{}{\tabularnewline \hline}%
+			\benchmark & \refvalue \numprint{\native}
+			& \numprint{\dyn} & \numprint{\pin}%
+		}
+		\tabularnewline \hline
+		\multicolumn{\numcolumns}{||c||}{\bfseries FP Benchmarks}\\
+		\hline
+		\DTLforeach*{fp}{%
+		\benchmark={\sumormean},\r={Base Ref Time},%
+		\native={\wordsize\space native \rt},%
+		\dyn={\wordsize\space dynamorio \rt},%
+		\pin={\wordsize\space pin \rt}}{%
+			\DTLiffirstrow{}{\tabularnewline \hline}%
+			\benchmark & \refvalue \numprint{\native}
+			& \numprint{\dyn} & \numprint{\pin}%
+		}
+		\tabularnewline \hline
+		\end{tabular}
+		\caption{\wordsize\space x86 Benchmark \rt s for DynamoRIO and Pin}
+	\end{footnotesize}
+	\end{table}
+} %end for
+} %end for
+}{}
+\setlength{\DTLbaroutlinewidth}{1pt}
+% Remove sum row
+\newcommand{\db}{}
+\newcommand{\dtb}{}
+\newcommand{\axes}{}
+\renewcommand{\arch}{}
+%
+\ifthenelse{\equal{\printcharts}{t}}{
+% x86 Graphics
+\foreach \qemuwordsize in {qemu-i386,qemu-x86_64} {
+\foreach \rt in {Run Time,Ratio} {
+  \ifthenelse{\equal{\qemuwordsize}{qemu-i386}}%
+    {
+       \renewcommand{\wordsize}{32-bits}
+	   \renewcommand{\arch}{ia32}
+       \renewcommand{\qemuname}{qemu-i386}
+    }
+    {
+       \renewcommand{\wordsize}{64-bits}
+	   \renewcommand{\arch}{ia64}
+       \renewcommand{\qemuname}{qemu-x86\_64}
+    }
+  \ifthenelse{\equal{\rt}{Ratio}}%
+    {
+		 \renewcommand{\db}{}
+		 \renewcommand{\sumormean}{BenchmarkM}
+    }
+    {
+       %\renewcommand{\db}{nosum}
+       \renewcommand{\sumormean}{Benchmark}
+    }
+	\foreach \num in {int,fp} {%
+		\begin{figure}[htbp]
+		\begin{footnotesize}%
+		%\centering
+		\DTLmaxforkeys{\dtb}{{\wordsize\space native \rt},%
+{32-bits \qemuwordsize\space\rt},%
+{64-bits \qemuwordsize\space\rt}}{\maximum}%
+		\DTLmultibarchart{%
+			variables={\native,\qemu,\qemux,\dyn,\pin},%
+		barwidth=\barwidth,%
+		%uppermultibarlabels={{\tiny \wordsize\space Native},%
+		%{\tiny 32-bits \qemuname},%
+		%{\tiny 64-bits \qemuname}},%
+		uppermultibarlabels={{\tiny \numprint{\native}},%
+		{\tiny \numprint{\qemu}},%
+		{\tiny \numprint{\qemux}},%
+		{\tiny \numprint{\dyn}},%
+		{\tiny \numprint{\pin}}},%
+		%max=\maximum,%
+		length=0.7\linewidth,%
+		%axes=y,
+		verticalbars=false,%
+		barlabel={\benchmark}}{\num\db}{%
+			\benchmark={\sumormean},%
+			\native={\wordsize\space native \rt},%
+			\qemu={32-bits \qemuwordsize\space\rt},%
+			\qemux={64-bits \qemuwordsize\space\rt},%
+			\dyn={\wordsize\space dynamorio \rt},%
+			\pin={\wordsize\space pin \rt}%
+		}
+		\caption{\rt s of \wordsize\space x86 spec\num}%
+		\usebox{\greensquare} \wordsize\space Native\hfill%
+		\usebox{\yellowsquare} 32-bits \qemuname\\%
+		\usebox{\redsquare} 64-bits \qemuname\hfill%
+		\usebox{\cyansquare} DynamoRIO\hfill%
+		\usebox{\darkgraysquare} Pin%
+		\end{footnotesize}
+		\end{figure} 
+	}%
+	\newpage
+} %end for
+} %end for
+}{}
+% ARM Graphics 
+\ifthenelse{\equal{\printcharts}{t}}{
+\renewcommand{\qemuname}{qemu-arm}
+\newcommand{\qemuwordsize}{qemu-arm}
+\foreach \rt in {Run Time,Ratio} {
+  \foreach \num in {int,fp} {%
+  \ifthenelse{\equal{\rt}{Ratio}}%
+    {
+       \renewcommand{\dtb}{\num}
+       \renewcommand{\sumormean}{BenchmarkM}
+    }
+    {
+       \renewcommand{\dtb}{\num}% nosum}
+       \renewcommand{\sumormean}{Benchmark}
+    }
+	\begin{figure}[htbp]
+  	\begin{footnotesize}
+	\centering
+	\DTLmultibarchart{variables={\native,\imxqemu,\qemu,\qemux},
+	%axes=y,
+	barwidth=\barwidth,
+%	uppermultibarlabels={{\tiny Native},{\tiny ARM qemu-arm},%
+%{\tiny 32-bits x86 qemu-arm},{\tiny 64-bits x86 qemu-arm}},
+	uppermultibarlabels={{\tiny \numprint{\native}},%
+{\tiny \numprint{\imxqemu}},%
+{\tiny \numprint{\qemu}},{\tiny \numprint{\qemux}}},%
+	verticalbars=false,
+	barlabel={\benchmark}}{\dtb}{%
+		\benchmark={\sumormean},%
+		\native={ARM native \rt},%
+		\imxqemu={ARM imx53 \qemuwordsize\space\rt},%
+		\qemu={ARM node10 32-bits \qemuwordsize\space\rt},%
+		\qemux={ARM node10 64-bits \qemuwordsize\space\rt}%
+	}
+	\caption{\rt s of Spec\num}%
+	\usebox{\greensquare} Native ARM\hfill
+	\usebox{\yellowsquare} ARM imx53 \qemuname\\
+	\usebox{\redsquare} x86 32-bits \qemuname\hfill%
+	\usebox{\cyansquare} x86 64-bits \qemuname%
+  \end{footnotesize}
+  \end{figure}%
+  %\newpage%
+  }%
+} %end for
+}{}
+\newpage
+   The user-mode QEMU is, therefore,
+   much slower than the average~\cite{stardbt}.
+   Its slowdown is summarized on
+   the next chart, whose bars represent the
+   $\frac{Native Run Time}{Emulated Run Time}$ ratio,
+   that is, how much slower the given emulation is
+   in comparison to native runs.
+% QEMU Slowdown Graphic
+\newcommand{\ia}{ia64}
+\newcommand{\num}{fp}
+\ifthenelse{\equal{\printcharts}{t}}{
+	\foreach \ia in {ia32,ia64}{
+	\foreach \num in {int,fp} {%
+	  \ifthenelse{\equal{\ia}{ia32}}%
+		{
+		   \renewcommand{\wordsize}{32-bits}
+		   \renewcommand{\arch}{ia32}
+		   \renewcommand{\qemuname}{qemu-i386}
+		}
+		{
+		   \renewcommand{\wordsize}{64-bits}
+		   \renewcommand{\arch}{ia64}
+		   \renewcommand{\qemuname}{qemu-x86\_64}
+		}
+		\renewcommand{\dtb}{\tabledir/\ia-\num slowdown.csv}%
+		\DTLloadrawdb{\dtb}{\dtb}%
+		%\DTLmaxforkeys{\dtb}{{32-bits qemu Slowdown},{64-bits qemu Slowdown},%
+%{32-bits dynamorio Slowdown},{64-bits dynamorio Slowdown}}{\maximum}
+		\begin{figure}[htbp]
+		\begin{footnotesize}
+		\centering
+		\DTLmultibarchart{%
+			variables={\qemu,\xqemu,\dynamorio,\pin},%
+			%max=\maximum,
+			length=0.7\linewidth,
+			axes=y,
+			barwidth=5pt,
+			uppermultibarlabels={{\tiny \numprint{\qemu}},%
+				{\tiny \numprint{\xqemu}},%
+				{\tiny \numprint{\dynamorio}},%
+				{\tiny \numprint{\pin}}},%
+			%uppermultibarlabels={{\tiny 32-bits qemu},%
+			%	{\tiny 64-bits qemu},%
+			%	{\tiny 32-bits dynamorio},%
+			%	{\tiny 64-bits dynamorio}},%
+			verticalbars=false,%
+			barlabel={\benchmark}}{\dtb}{%
+				\benchmark={Benchmark},%
+				\qemu={32-bits qemu Slowdown},%
+				\xqemu={64-bits qemu Slowdown},%
+				\dynamorio={dynamorio Slowdown},%
+				\pin={pin Slowdown}%
+		}
+		\caption{Overhead Spec\num\space for \wordsize\space x86}%
+		\usebox{\greensquare} 32-bits \qemuname\hfill
+		\usebox{\yellowsquare} 64-bits \qemuname\hfill
+		\usebox{\redsquare} DynamoRIO\\%
+		\usebox{\cyansquare} Pin\hfill%
+		\end{footnotesize}
+		\end{figure}%
+	}% end for
+	}% end for
+}{}
+
+  Afterwards, the causes of QEMU's slowness are depicted.
+  The following tables and bar charts are result of
+  profiling runs done with the {\tt perf} tool.
+  The tables specify how much time was spent on
+  each function that was running due to the given command,
+  whereas the bar charts display the time in a more elaborated
+  manner, grouping the application in its most meaningful areas:
+  %itemize?
+  \benchmarkname, that is, the benchmark itself,
+  on QEMU's code cache;
+  \mutexname, operations used by QEMU to manage critical sections;
+  \fpname, floating-point operations done by QEMU using software;
+  \qname, any other QEMU emulation code;
+  \perfname, the profiling tool.
+  % tag:others
+  %Other, symbolizing time-irrelevant areas of code.
+  Details of criteria used to make these areas were given
+  in section \ref{sec:methodology}.
+  Figure \ref{cht:perf} sums up QEMU profiling in one chart.
+  Each column represents a benchmark runtime, divided according
+  to time spent on each of the areas mentioned early.
+  Next, each benchmark runtime is detailed with a table showing
+  the most time-consuming functions and with a chart depicting
+  the time spent on each of the areas referred early.
+  ``[.]'' means user space, while ``[k]'' is kernel space.
+  Analyzing these results, we can see that
+  the emulations with the worst overhead
+  performed a lot of mutex or floating point operations.
+  More specifically, INT benchmarks had a considerable overhead
+  due to mutex operations, while all FP benchmarks had a
+  great chunk of their time spent on floating-point emulation.
+  In fact, the
+  %POSIX Threads implementations of
+  mutex operations demand
+  a lot of time, as they must sync threads
+  to ensure correct execution of critical sections.
+  %Plus, its
+  %POSIX Threads implementation is done in the kernel space,
+  %requiring context switching, thus becoming time-consuming
+  %operations.
+  Also, as stated in source code, QEMU uses 
+  SoftFloat IEC/IEEE Floating-point Arithmetic Package, implying
+  that floating point operations are emulated by software,
+  which justifies QEMU's enormous floating-point overhead,
+  as one single hardware floating-point operation becomes
+  a whole software routine.
+
+%Perf profiling results
+% Generated with
+% for file in `ls`; do N=`echo $file | cut -c5- | sed "s#-.*##" | sed "s/[0-9].*//g" `; PREFIX=`echo $file | rev | cut -c21- | rev` ; BMNAME=`echo $PREFIX | rev | cut -c2- | rev` ;echo -n "\p$N/" ; echo -n  "\\${N}name/"; echo "\pa$N,%"; done
+\ifthenelse{\equal{\printcharts}{t}}{
+\foreach \perffile/\bmname/\perfareasfile in {%
+\pperlbench/\perlbenchname/\paperlbench,%
+\pbzip/\bzipname/\pabzip,%
+\pgcc/\gccname/\pagcc,%
+\pmcf/\mcfname/\pamcf,%
+\pgobmk/\gobmkname/\pagobmk,%
+\phmmer/\hmmername/\pahmmer,%
+\psjeng/\sjengname/\pasjeng,%
+\plibquantum/\libquantumname/\palibquantum,%
+\ph/\hname/\pah,%
+\pomnetpp/\omnetppname/\paomnetpp,%
+\pastar/\astarname/\paastar,%
+\pxalancbmk/\xalancbmkname/\paxalancbmk,%
+\pbwaves/\bwavesname/\pabwaves,%
+\pgamess/\gamessname/\pagamess,%
+\pmilc/\milcname/\pamilc,%
+\pzeusmp/\zeusmpname/\pazeusmp,%
+\pgromacs/\gromacsname/\pagromacs,%
+\pcactusADM/\cactusADMname/\pacactusADM,%
+\pleslie/\lesliename/\paleslie,%
+\pnamd/\namdname/\panamd,%
+\pdealII/\dealIIname/\padealII,%
+\psoplex/\soplexname/\pasoplex,%
+\ppovray/\povrayname/\papovray,%
+\pcalculix/\calculixname/\pacalculix,%
+\pGemsFDTD/\GemsFDTDname/\paGemsFDTD,%
+\ptonto/\tontoname/\patonto,%
+\plbm/\lbmname/\palbm,%
+\pwrf/\wrfname/\pawrf,%
+\psphinx/\sphinxname/\pasphinx%
+} {
+%\newpage
+% Testing with one only
+%\newcommand{\perfareasfile}{\paperlbench}
+%\newcommand{\bmname}{\bzipname}
+%\newcommand{\perffile}{\pbzip}
+\DTLloadrawdb{\bmname}{\perffile}%
+\DTLloadrawdb{\perfareasfile}{\perfareasfile}
+%\DTLsort{Symbol=ascending}{\perfareasfile}
+\setlength{\DTLbaroutlinewidth}{1pt}
+\begin{table}[!htbp]
+	\centering
+    \begin{footnotesize}
+	\DTLsetseparator{,}%
+	\DTLsetnumberchars{.}{,}%
+	\begin{tabular}{||r|l|l||}
+		\hline
+		\small\bfseries Overhead(\%) &
+		\small\bfseries Command &
+		%\bfseries Shared Object &
+		\small\bfseries Symbol \\ %\tabularnewline
+		\hline%
+		\DTLforeach*{\bmname}{%
+		\overhead={Overhead},%
+		\command={Command},%
+		\so={Shared Object},%
+		\sym={Symbol}}{%
+		\ifthenelse{\DTLcurrentindex=\maxperfrows}{\dtlbreak}{}%
+		\ifthenelse{\equal{\overhead}{0}}{\dtlbreak}{}
+			\DTLiffirstrow{}{\tabularnewline \hline}%
+				\numprint{\overhead} &%
+				\command &%
+				\sym %&%
+				%\overhead %
+		}%
+		\tabularnewline \hline%
+	\end{tabular}%
+	\caption{Profiling of \bmname}%
+	\end{footnotesize}
+\end{table}%
+\begin{figure}[!htbp]
+	\centering
+	\begin{footnotesize}
+	\DTLbarchart{variable={\percentage},%
+	%max=100,%
+	length=0.6\linewidth,%
+	verticalbars=false,%
+	axes=y,%
+	yticgap=10,%
+	barwidth=\hbarwidth,%
+	upperbarlabel={\percentage\%},%
+	barlabel={\area}}{\perfareasfile}{%
+		\percentage={Overhead},%
+		\area={Symbol}%
+	}%
+	\caption{Main Code Areas for \bmname}%
+	\end{footnotesize}
+\end{figure}
+\npnoround%
+\newpage
+}%end for
+}{}
+\newpage
+\bibliography{technical_report} %NO problem with _'s !!
+\bibliographystyle{unsrt}
+\end{document}

@@ -1,0 +1,9 @@
+Overhead,Command,Shared Object,Symbol
+59.15,qemu-x86\_64,84c62d,[.] 0x0000000084c62d
+16.46,qemu-x86\_64,/local/timbo/node-qemu-64/not-stripped64/qemu-x86\_64,[.] cpu\_x86\_exec
+12.76,qemu-x86\_64,/local/timbo/node-qemu-64/not-stripped64/qemu-x86\_64,[.] \_\_pthread\_mutex\_unlock
+10.66,qemu-x86\_64,/local/timbo/node-qemu-64/not-stripped64/qemu-x86\_64,[.] \_\_pthread\_mutex\_lock
+0.38,qemu-x86\_64,/local/timbo/node-qemu-64/not-stripped64/qemu-x86\_64,[.] helper\_divl\_EAX
+0.36,qemu-x86\_64,/local/timbo/node-qemu-64/not-stripped64/qemu-x86\_64,[.] helper\_cc\_compute\_all
+0.05,qemu-x86\_64,/local/timbo/node-qemu-64/not-stripped64/qemu-x86\_64,[.] helper\_cc\_compute\_c
+0.01,perf\_2.6.32-46,[kernel],[k] copy\_user\_generic\_string

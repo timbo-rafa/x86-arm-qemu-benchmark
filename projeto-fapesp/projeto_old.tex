@@ -1,0 +1,399 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[brazil]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{times}
+\rmfamily
+\usepackage{lscape}
+\usepackage{latexsym}
+\usepackage{amscd}
+\usepackage{amsfonts}
+\usepackage{epsf}
+\usepackage{times}
+\usepackage{multicol}
+\usepackage{url}
+\usepackage[top=3cm,left=2cm,right=2cm,bottom=3cm]{geometry}
+\linespread{1.5}
+
+\def\candidato{Rafael Timbó Matos}
+\def\orientador{Prof. Dr. Edson Borin}
+\def\degr{${}^\circ$}
+
+%%%%%%%%%%%%%
+% Palavra em idioma estrangeiro
+%%%%%%%%%%%%%
+\newcommand{\etal}{\emph{et alli}}
+\newcommand{\Software}{\emph{Software}}
+\newcommand{\Hardware}{\emph{Hardware}}
+\newcommand{\software}{\emph{software}}
+\newcommand{\softwares}{\emph{softwares}}
+\newcommand{\hardware}{\emph{hardware}}
+\newcommand{\DOTNET}{.NET}
+\newcommand{\VLIW}{VLIW}
+\newcommand{\benchmark}{\emph{benchmark}}
+\newcommand{\benchmarks}{\emph{benchmarks}}
+\newcommand{\Benchmark}{\emph{Benchmark}}
+\newcommand{\Benchmarks}{\emph{Benchmarks}}
+\newcommand{\laptops}{\emph{laptops}}
+\newcommand{\scripts}{\emph{scripts}}
+
+\hyphenation{i-ni-ci-a-li-za-ção com-par-ti-lha-men-to cons-tru-ção cor-re-ções vir-tu-ais pro-ces-sa-do-res pro-ces-sa-dor me-lho-rar Per-nam-bu-co
+a-pre-sen-ta ca-rac-te-ri-za-do pro-ce-sso in-ter-pre-ta-ção fer-ra-men-ta sis-te-mas ar-ma-ze-nar de-sen-vol-vi-men-to me-di-da}
+
+\bibliographystyle{plain}
+
+%--------------------------------
+\begin{document}
+
+%---------------------------------------------------------------------
+% Resumo em português
+%---------------------------------------------------------------------
+\thispagestyle{empty}
+\bigskip
+\bigskip
+\centerline{\LARGE\bf Técnicas para Análise de Desempenho de}
+\centerline{\LARGE\bf Máquinas Virtuais}
+\bigskip\bigskip
+\centerline{\large\bf Candidato: \candidato}
+\centerline{\large\bf Orientador: \orientador}
+\bigskip\bigskip
+\centerline{\large Instituto de Computação}
+\centerline{\large Universidade Estadual de Campinas}
+\bigskip
+\def\abstractname{\normalsize Resumo}
+
+\begin{abstract}\normalsize
+
+A análise de desempenho de processadores tem sido realizada através da execução
+de conjuntos de aplicações denominados \benchmarks. Da mesma forma, a comunidade
+científica tipicamente emprega o uso dos mesmos \benchmarks\ para avaliar o
+desempenho de Máquinas Virtuais. Entretanto, resultados de pesquisas
+recentes~\cite{divino2012wish} indicam que os \benchmarks\ tipicamente
+utilizados para avaliação de processadores (SPEC CPU) podem mascarar a
+sobrecarga das técnicas de emulação quando utilizados para avaliar máquinas
+virtuais. Assim sendo, este trabalho propõe um levantamento de
+\benchmarks\ voltados para a análise de máquinas virtuais e a construção de um
+banco de dados para armazenar resultados de experimentos. Tais
+\benchmarks\ possibilitarão a avaliação e o desenvolvimento de técnicas de
+emulação em máquinas virtuais e o estudo de técnicas eficientes de
+interpretação, considerando adequadamente a sobrecarga das técnicas de emulação.
+\end{abstract}
+
+%{\bf Palavras Chave}: Máquinas Virtuais, \benchmarks, \benchmarks\ para máquinas virtuais
+
+%\clearpage
+\section{Introdução e Justificativa}
+\label{sec:intro}
+Máquinas virtuais são programas de computador que emulam uma interface para
+execução de outros programas, compilados para a interface sendo emulada. Esta
+tecnologia está presente em diversos sistemas computacionais e é utilizada desde
+o suporte à linguagens de programação de alto nível, como na máquina virtual
+Java, até a implementação de processadores com projeto integrado de \hardware\ e
+\software, como é o caso do processador Efficeon~\cite{Kre03} da Transmeta.
+
+%%%%%%%%%%%%%%%% ESTRUTURA DO DOCUMENTO %%%%%%%%%%%%%%%%%%
+Este documento está organizado da seguinte forma: a Seção~\ref{sec:intro}
+introduz as principais técnicas de emulação em máquinas virtuais e apresenta as
+justificativas para o desenvolvimento deste trabalho.  A Seção~\ref{sec:trab}
+descreve várias aplicações de máquinas virtuais.  A Seção~\ref{sec:mat}
+apresenta metodologia e as ferramentas utilizadas.
+Por fim, a Seção~\ref{sec:plano} contém o plano de trabalho e o cronograma da
+iniciação científica. %
+%%%%%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%
+
+\subsection{Interpretação}
+\label{subsec:int}
+No contexto de máquinas virtuais, interpretação é uma técnica de emulação
+utilizada para execução de instruções de uma máquina hóspede. Um interpretador
+executa as instruções do programa hóspede uma a uma, em um ciclo que envolve o
+carregamento, a análise e a execução da instrução. A ferramenta
+Bochs~\cite{boch} é um exemplo de máquina virtual que emula a arquitetura x86
+utilizando interpretação.
+
+O processo é relativamente simples e possibilita que o interpretador seja
+implementado geralmente em uma linguagem de alto nível, o que permite uma maior
+portabilidade. A simplicidade do procedimento também auxilia na depuração e
+validação do software. A execução de instruções uma a uma, em ordem, facilita o
+tratamento de interrupções e exceções durante a execução.%NewPage
+
+Apesar da simplicidade, este processo é geralmente lento, o que pode tornar
+inviável a utilização desta técnica em algumas máquinas virtuais. Segundo Smith
+e Nair~\cite{smith_nair_1}, um dos principais motivos para a interpretação ser
+lenta é o fato de que a execução de cada instrução é acompanhada de uma análise
+- como, por exemplo, a decodificação - e da busca e execução de uma rotina para
+emular o comportamento da instrução. O interpretador da ferramenta FX!32, apesar
+de ser otimizado manualmente, executa em média 45 instruções da máquina Alpha
+para emular uma instrução x86~\cite{fx32}. As técnicas de pré-decodificação e
+\emph{direct threaded interpretation}~\cite{opt_branch, klint} podem ser usadas
+na prática para acelerar o processo de interpretação.
+
+\subsection{Tradução Dinâmica de Binários}
+\label{subsec:trad}
+Na interpretação, uma mesma rotina executa todas as instruções fontes do mesmo
+tipo. Por exemplo, toda instrução de subtração é executada por uma mesma rotina
+que realiza as operações de subtração. O desempenho do interpretador pode ser
+melhorado significativamente se cada instrução fonte for mapeada para a sua
+própria rotina, otimizada para execução da instrução. Este processo de converter
+as instruções do programa hóspede para instruções da máquina hospedeira é
+denominado tradução de binários~\cite{bin_t}.
+
+Na tradução estática de binários, todo o código binário é traduzido antes da
+aplicação ser executada. Esta técnica nem sempre é possível, pois certas
+aplicações geram parte do seu código dinamicamente. Além disso, existem
+aplicações que misturam a área de código com a área de dados, tornando o
+processo de descoberta do código antes da execução mais difícil ou até mesmo
+impossível. Por outro lado, a tradução dinâmica de binários traduz o código
+hospedeiro à medida que ele é executado, isto é, à medida que o código é
+descoberto. Esta abordagem permite a tradução de código gerado
+dinamicamente. Adicionalmente, como apenas código executado é traduzido, o
+tradutor não precisa diferenciar código de dados.
+
+A tradução dinâmica de binários envolve um custo de inicialização associado à
+tradução do programa hóspede durante a execução. No entanto, o código traduzido
+é geralmente armazenado em uma região de memória e reutilizado quando o mesmo
+trecho do programa hóspede precisa ser reexecutado. A reutilização do código
+traduzido amortiza o custo de inicialização e, nos casos onde a execução do
+código é frequente, a tradução dinâmica de binários provê uma execução mais
+rápida que a interpretação. Borin e Wu~\cite{borin1} mostram que o processo de
+tradução dinâmica da ferramenta StarDBT causa, em média, uma perda de desempenho
+de apenas 9\% quando executa aplicações do benchmark SPEC CPU 2000~\cite{Hen00}.
+
+\subsection{\Benchmarks\ para Avaliação de Máquinas Virtuais}
+\label{subsec:av}
+A tradução dinâmica de binários é uma técnica eficiente para execução de código
+frequente, também conhecido como código quente. Em trechos de código
+frequentemente executados, o tempo de inicialização, usado pela tradução, é
+apenas uma pequena fração do tempo de execução. Nesses casos, o bom desempenho
+do código traduzido amortiza o custo de inicialização, o que torna a tradução
+dinâmica de binários mais vantajosa do que a técnica de interpretação. Por outro
+lado, para trechos de código pouco executados, ou código frio, o custo de
+inicialização pode ser muito maior do que o tempo de execução do código
+traduzido.
+
+Existem diversos tipos de aplicações onde o custo de inicialização pode tornar o
+uso de um tradutor de binários impraticável. Por exemplo, aplicações de tempo
+real, onde tarefas devem ser completadas em um determinado limite de tempo,
+podem ter suas restrições de tempo violadas por causa do tempo de inicialização
+da tradução de binários. Aplicações compostas por múltiplos programas de
+execução curta, onde a execução termina antes da execução do código otimizado
+amortizar o custo de inicialização, podem ter o seu tempo total de execução
+aumentado significativamente. O processo de inicialização do sistema
+operacional, frequente em plataformas como \laptops\ e dispositivos móveis,
+também é caracterizado pela execução de muito código frio, e o custo de
+inicialização pode tornar a tradução dinâmica inviável. Nesses casos, combinar
+interpretação com tradução dinâmica de binários é imprescindível.
+
+Apesar dos exemplos mencionados acima, a maioria dos trabalhos
+relacionados~\cite{Hen00, pin} só apresenta resultados de experimentos com
+\benchmarks\ caracterizados por gastar a maior parte do tempo de execução em
+código quente, como o \benchmark\ Spec CPU~\cite{Hen00}. Este projeto de
+pesquisa levantará e desenvolverá novos \benchmarks\ com características mais
+próximas ao uso típico de um computador móvel ou de mesa, permitindo uma
+avaliação mais realista do desempenho de máquinas virtuais. Estes
+\benchmarks\ darão suporte a projetos correlacionados no laboratório de sistemas
+de computação (LSC), onde técnicas de tradução dinâmica de binários eficientes
+estão sendo desenvolvidas. Os \benchmarks\ serão executados nativamente e
+emulados com máquinas virtuais e os resultados experimentais serão armazenados
+em um banco de dados, que servirá de base para o cruzamento de dados e
+repositório para as análises em outros projetos de pesquisa.
+
+%\clearpage
+%FIM DA INTRODUCAO
+
+\subsection{Justificativa Quanto ao Candidato e Orientador}
+\label{subsec:just}
+%% Candidato %%
+
+O aluno candidato deste projeto estudou no Colégio Militar de Salvador. O
+candidato foi aprovado nos vestibulares de todas as universidades que prestou,
+dentre elas, Universidade Federal de Pernambuco e Universidade Federal da Bahia,
+sendo primeiro colocado nesta última no curso de Engenharia da Computação no ano
+de 2010. Na Universidade Estadual de Campinas, obteve mais do que 80\% de
+rendimento em todas suas matérias de computação, mantendo-se em oitavo colocado
+na sua turma de Ciência da Computação no 1\degr\ semestre de 2012. %
+%% Orientador %%
+
+O orientador deste trabalho tem experiência na área de tradução dinâmica de
+binários com diversas contribuições, incluindo novos algoritmos e suporte em
+\hardware\ para implementação de máquinas virtuais eficientes. O pesquisador
+trabalhou quatro anos como cientista pesquisador no \emph{Programming System
+  Labs} da Intel, na Califórnia. Como parte do grupo BCT (\emph{Binary
+  Compilation Technology}), ele desenvolveu e publicou diversas técnicas para
+melhorar a tradução dinâmica de binários em diversos sistemas, incluindo novas
+técnicas de formação de regiões~\cite{BWBW11,PGW+08,BWW+10}, técnicas de
+paralelização dinâmica~\cite{WWB+09}, avaliação de desempenho de tradutores
+dinâmicos de binários~\cite{BW08, BW09}, e outros~\cite{WHBW11, BWWA05, BWWA06,
+  PABW10}. Além destas publicações e outras patentes, listadas na súmula
+curricular, o pesquisador teve a oportunidade de trabalhar diretamente na
+infraestrutura do processador Efficeon~\cite{Kre03}\footnote{A infraestrutura do
+  processador Efficeon foi licenciada pela empresa Intel.}, o estado da arte em
+tecnologia de máquinas virtuais de sistema e de máquinas virtuais com o projeto
+integrado de \hardware\ e \software.
+
+\section{Trabalhos Relacionados}
+\label{sec:trab}
+Uma máquina virtual é uma duplicata isolada e eficiente de uma máquina
+real~\cite{popek_goldberg}. Este termo é utilizado atualmente de forma mais
+abrangente, não estando necessariamente associado à máquinas físicas. Java, ou
+JVM\footnote{Do inglês: \emph{Java Virtual Machine}.}, por exemplo, não está
+associada a um \hardware.
+
+Em diversos contextos, questões relacionadas a sistemas de computação têm sido
+resolvidas com a aplicação de márquinas virtuais. No ramo de linguagens de
+programação, máquinas virtuais permitem a independência de programas em relação
+às plataformas, possibilitando a execução em diversos sistemas. A plataforma
+Java~\cite{java}, introduzida pela Sun Microsystems, e a infraestrutura de
+linguagem comum~\cite{cli}, ou CLI\footnote{Do inglês: \emph{Common Language
+    Infrastructure}.}, da Microsoft, são exemplos de implementações de máquinas
+virtuais que proveem suporte à execução de programas independente de
+plataforma. Recentemente, a empresa Google lançou mão da tecnologia de máquinas
+virtuais para executar as aplicações da plataforma
+Android~\cite{ehringer2010dalvik}.
+
+A execução de múltiplos sistemas operacionais em um único processador pode ser
+alcançada através da virtualização de processadores. Esta tecnologia faz uso
+eficiente do processador através do compartilhamento de recursos. A VMware tem
+lançado máquinas virtuais que executam múltiplos sistemas operacionas em um
+mesmo processador, ou servidor, de forma segura, abrindo espaço para o
+compartilhamento de recursos computacionais~\cite{vmware}. A virtualização de
+processadores possibilita também a execução de sistemas operacionais em
+processadores com instruções distintas. A máquina virtual Virtual PC~\cite{pc}
+executa, em uma plataforma Macintosh, sistemas operacionais Microsoft Windows.
+
+Emuladores são utilizados para se executar programas que foram compilados para
+uma arquitetura com um conjunto de instruções distinto. Neste âmbito, temos como
+exemplo as ferramentas Rosetta~\cite{rosetta}, Digital FX!32~\cite{fx} e Intel
+IA-32 EL~\cite{intel}. A primeira faz parte da distribuição do sistema
+operacional Mac OS X, da Apple, permitindo aos novos sistemas (baseados na
+arquitetura x86) executarem programas compilados para a arquitetura
+PowerPC. Analogamente, os emuladores Intel IA-32 EL e Digital FX!32 permitem a
+execução de programas baseados na arquitetura x86 em Itanium e Alpha,
+respectivamente. Embora semelhantes, Smith e Nair~\cite{smith_nair_1}
+classificam emuladores e ferramentas para virtualização de processadores de
+forma diferente. Enquanto estas são classsificadas como máquinas virtuais de
+sistema, aqueles são máquinas virtuais de processo.
+
+A análise e instrumentação de programas binários durante a sua execução podem
+ser efetuadas por ferramentas de instrumentação dinâmica de binários, como
+Pin~\cite{pin} e Valgrind~\cite{val}. Neste caso, os binários são geralmente
+aplicações compiladas para o mesmo conjunto de instruções, de modo que as
+ferramentas servem para instrumentar estes códigos binários. Otimizadores
+dinâmicos de binários, como o Dynamo~\cite{dyn}, desenvolvido pela HP, e o
+StarDBT~\cite{star}, desenvolvido pela Intel, são máquinas virtuais semelhantes
+às ferramentas de instrumentação, porém focam na melhora do desempenho através
+da otimização, no lugar da instrumentação.
+
+Na área de arquitetura de computadores, as máquinas virtuais possibilitam a
+melhora de desempenho e a redução de energia através da otimização dinâmica de
+binários. Os processadores da Transmeta - Crusoe~\cite{halfhill} e
+Efficeon~\cite{Kre03} - implementam a arquitetura x86 a partir de uma máquina
+virtual com projeto integrado de \software\ e \hardware. O \hardware\ implementa
+um processador com instruções VLIW\footnote{Do inglês: \emph{Very-Long
+    Instruction Word}.} proprietárias e o \software~\cite{soft}, executando
+sobre o \hardware\ proprietário, emula a arquitetura x86 através da
+interpretação e tradução dinâmica de binários. Nesta situação, uma otimização
+dinâmica do código acompanha a tradução dinâmica, para melhoria de desempenho e
+redução de energia.
+
+Na área de desenvolvimento de sistemas, as máquinas virtuais permitem a execução
+de testes de \software\ de grande porte sem que o \hardware\ esteja
+completamente implementado. As máquinas virtuais se tornam essenciais nesta
+esfera, pois a implementação do \hardware\ é concomitante ao desenvolvimento do
+\software.
+
+Todas estas máquinas virtuais podem ser definidas como programas de computador
+que emulam\footnote{Smith e Nair~\cite{smith_nair_2} definem emulação como a
+  implementação da interface e da funcionalidade de um (sub)sistema em outro com
+  interfaces e funcionalidades diferentes.} interfaces para execução de outros
+programas. A interface emulada por uma máquina virtual pode ser uma interface
+concebida para auxiliar a execução de uma nova linguagem de alto nível, como é o
+caso do \emph{bytecode} na máquina virtual Java, ou o conjunto de instruções da
+arquitetura de um processador, como no conjunto de instruções x86 no processador
+Efficeon. Muitas destas máquinas utilizam técnicas de emulação similares, como
+interpretação e tradução dinâmica de binários.
+%FIM DOS TRABALHOS RELACIONADOS
+
+\section{Materiais e Métodos}
+\label{sec:mat}
+Os testes de desempenho serão realizados em na plataforma ARM i.MX53 Quick Start
+Board~\cite{imx53}, fabricada pela Freescale e em computadores com processadores
+da família x86. A plataforma i.MX53 vem equipada com um \emph{System-on-a-Chip}
+(SoC) com um processador Cortex-A8\texttrademark\ de 1GHz integrado com unidades
+de processamento de vídeo, de imagem e de gráficos 2D e 3D. Além disso, a
+plataforma possui 1GB de memória RAM e conexões ethernet, USB, RD 232, PATA,
+SATA II, e VGA. O sistema é fornecido com um cartão SD (de 4GB) com uma
+distribuição Linux Ubuntu Lucid Lynx 2.6.35.3~\cite{ubuntu}, incluindo o
+compilador gcc-4.4.3~\cite{Gough_anintroduction}.  Esta plataforma será
+responsável por executar \benchmarks, como o SPEC CPU~\cite{Hen00}, de forma
+nativa e emulada. As máquinas virtuais responsáveis pela emulação desfrutarão de
+diversas técnicas de emulação, que poderão então ser testadas.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% MAQUINAS VIRTUAIS UTILIZADAS %%%%%%%%%%%%%%%%%%%%%%%
+Como exemplo de máquinas virtuais usaremos as ferramentas QEMU~\cite{qemu} e
+DynamoRIO~\cite{BGA03}. O QEMU é um tradutor dinâmico de binários flexível
+capaz de emular tanto um processo quanto um sistema operacional, o DynamoRIO é
+um tradutor dinâmico de binários eficiente desenvolvido pelo MIT. Pretendemos
+utilizar a ferramenta Bochs~\cite{boch} para os testes de interpretação.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Com base em técnicas da literatura~\cite{opt_branch,klint}, os
+\benchmarks\ atuais serão adaptados para ponderar também código frio, simulando
+mais autenticamente uma máquina virtual. O objetivo é reproduzir com fidelidade
+os métodos utilizados em aplicações reais durante a avaliação dos
+interpretadores e tradutores dinâmicos de binários.
+
+Um banco de dados será desenvolvido para armazenamento dos resultados de
+experimentos, que será implementado utilizando a ferramenta
+mysql~\cite{mysql2001}.  O mesmo servirá de base para consolidar e armazenar
+resultados de experimentos provenientes deste e de outros projetos do
+laboratório de sistemas de computação do Instituto de Computação da Unicamp.
+
+\section{Plano de Trabalho}
+\label{sec:plano}
+Inicialmente, nos primeiros meses, \benchmarks\ atuais serão analisados para
+servir de base para a construção de um novo \benchmark, sendo registradas as
+situações de interpretação não testadas. Em seguida, novos \benchmarks\ focados
+em máquinas virtuais serão desenvolvidos e testados, com posteriores correções e
+otimizações. Paralelo à isto, será desenvolvido o banco de dados.
+
+\subsection{Cronograma}
+
+\begin{center}
+\begin{footnotesize}
+\begin{tabular}{||l||p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.2cm}|p{0.24cm}||}
+  \hline
+  \hline
+                        & \multicolumn{12}{|c||}{M\^es}\\
+  \hline
+  \hline
+  Itens &1 &2 &3 &4 &5 &6 &7 &8 &9 &10&11&12\\
+  \hline
+
+  Implementação do banco de dados &$\bullet$&$\bullet$&$\bullet$&         &         &         &         &         &         &         &          &         \\
+  \hline
+
+  Estudo e levantamento de \benchmarks           &$\bullet$&$\bullet$&$\bullet$&$\bullet$&         &         &         &         &         &         &          &         \\
+  \hline
+
+  Testes do banco de dados        &         &         &         &$\bullet$&$\bullet$&         &         &         &         &         &          &         \\
+  \hline
+
+  Implementação dos \benchmarks   &         &         &         &$\bullet$&$\bullet$&$\bullet$&$\bullet$&         &         &         &          &         \\
+  \hline
+
+  Experimentos de desempenho com os \benchmarks          &         &         &         &         &         &         &$\bullet$&$\bullet$&$\bullet$& $\bullet$&$\bullet$&   \\
+  \hline
+  
+  Relatório final e artigos                      &         &         &         &         &         &         &         &         &         &         &$\bullet$&$\bullet$\\
+  \hline
+
+  \hline
+\end{tabular}
+\label{tab:cronograma}  
+\end{footnotesize}
+\end{center}
+
+\begin{small}
+\bibliography{ref}
+\end{small}
+\end{document}

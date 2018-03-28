@@ -1,0 +1,13 @@
+Overhead,Command,Shared Object,Symbol
+81.91,qemu-x86\_64,83efd4,[.] 0x0000000083efd4
+6.89,qemu-x86\_64,/local/timbo/node-qemu-64/not-stripped64/qemu-x86\_64,[.] \_\_pthread\_mutex\_unlock
+5.78,qemu-x86\_64,/local/timbo/node-qemu-64/not-stripped64/qemu-x86\_64,[.] \_\_pthread\_mutex\_lock
+4.96,qemu-x86\_64,/local/timbo/node-qemu-64/not-stripped64/qemu-x86\_64,[.] cpu\_x86\_exec
+0.23,qemu-x86\_64,/local/timbo/node-qemu-64/not-stripped64/qemu-x86\_64,[.] helper\_cc\_compute\_all
+0.03,qemu-x86\_64,/local/timbo/node-qemu-64/not-stripped64/qemu-x86\_64,[.] roundAndPackFloat32
+0.02,qemu-x86\_64,/local/timbo/node-qemu-64/not-stripped64/qemu-x86\_64,[.] float32\_mul
+0.01,qemu-x86_64,[kernel],[k] copy\_user\_generic\_string
+0.01,qemu-x86\_64,/local/timbo/node-qemu-64/not-stripped64/qemu-x86\_64,[.] addFloat32Sigs
+0.01,qemu-x86\_64,/local/timbo/node-qemu-64/not-stripped64/qemu-x86\_64,[.] helper\_cc\_compute\_c
+0.01,qemu-x86\_64,[kernel],[k] \_\_ticket\_spin\_lock
+0.01,qemu-x86\_64,/local/timbo/node-qemu-64/not-stripped64/qemu-x86\_64,[.] normalizeRoundAndPackFloat32
